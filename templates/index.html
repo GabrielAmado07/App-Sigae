@@ -3,62 +3,139 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Hospitalar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
 
 <body>
+    <!-- Barra superior -->
+    <header class="topbar">
+        <div class="topbar-brand">Sistema Hospitalar — Triagem</div>
+        <div class="topbar-actions">
+            <span>Recepção / Triagem</span>
+        </div>
+    </header>
 
-    <h1>Sistema de Triagem Hospitalar</h1>
-    <p>Bem-vindo ao sistema do Hospital.</p>
+    <div class="layout">
+        <!-- Menu lateral -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-circle">+</div>
+            </div>
+            <ul class="nav-list">
+                <li class="nav-item active"><a href="{{ url_for('index') }}">Triagem e Fila</a></li>
+                <li class="nav-item"><a href="#cadastro">Novo Paciente</a></li>
+                <li class="nav-item"><a href="#fila">Fila Atual</a></li>
+            </ul>
+        </aside>
 
-    <form method="POST" action="{{ url_for('index') }}">
-        <label for="nome">Nome:</label>
-        <input type="text" id="nome" name="nome" required>
-        <br><br>
-        <label for="horario">Horário:</label>
-        <input type="datetime-local" id="horario" name="horario" required>
-        <br><br>
-        <label for="classificacao">Classificação:</label>
-        <select id="classificacao" name="classificacao" required>
-            <option value="EMERGENCIA">Emergência</option>
-            <option value="MUITO_URGENTE">Muito Urgente</option>
-            <option value="URGENTE">Urgente</option>
-            <option value="POUCO_URGENTE">Pouco Urgente</option>
-            <option value="NAO_URGENTE">Não Urgente</option>
-        </select>
-        <br><br>
-        <label for="criterio">Priorizar por:</label>
-        <select id="criterio" name="criterio">
-            <option value="CLASSIFICACAO" {% if criterio == 'CLASSIFICACAO' %}selected{% endif %}>Classificação de emergência</option>
-            <option value="CHEGADA" {% if criterio == 'CHEGADA' %}selected{% endif %}>Horário de chegada</option>
-        </select>
-        <br><br>
-        <input type="submit" value="Adicionar à Fila">
-    </form>
+        <!-- Conteúdo principal -->
+        <main class="main-content">
+            <!-- Cabeçalho da página + indicadores -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Sistema de Triagem Hospitalar</h1>
+                    <p class="page-subtitle">Bem-vindo ao sistema do Hospital.</p>
+                </div>
 
-    <h2>Fila de atendimento</h2>
-    <p>Capacidade da tabela hash: {{ capacidade }}</p>
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-label">Na Fila</span>
+                        <span class="stat-value blue">{{ pacientes|length if pacientes else 0 }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Capacidade Hash</span>
+                        <span class="stat-value green">{{ capacidade }}</span>
+                    </div>
+                </div>
+            </div>
 
-    {% if pacientes %}
-    <ol>
-        {% for paciente in pacientes %}
-        <li>
-            {{ paciente.nome }} -
-            {{ paciente.horario.strftime('%d/%m/%Y %H:%M') }} -
-            {{ paciente.classificacao }}
-            <form method="POST" action="{{ url_for('remover', id_paciente=paciente.id) }}" style="display:inline">
-                <button type="submit">Remover</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ol>
-    {% else %}
-    <p>Não há pacientes na fila.</p>
-    {% endif %}
+            <!-- Painéis principais: Cadastro à esquerda, Fila à direita -->
+            <div class="triage-grid">
+                <!-- Painel do formulário -->
+                <section class="panel" id="cadastro">
+                    <div class="panel-header">Cadastro na Triagem</div>
+                    <div class="panel-body">
+                        <form method="POST" action="{{ url_for('index') }}" class="triage-form">
+                            <div class="form-group">
+                                <label for="nome">Nome:</label>
+                                <input type="text" id="nome" name="nome" placeholder="Nome completo do paciente" required>
+                            </div>
 
-    <form method="POST" action="{{ url_for('atender') }}">
-        <button type="submit">Atender próximo</button>
-    </form>
+                            <div class="form-group">
+                                <label for="horario">Horário:</label>
+                                <input type="datetime-local" id="horario" name="horario" required>
+                            </div>
 
+                            <div class="form-group">
+                                <label for="classificacao">Classificação:</label>
+                                <select id="classificacao" name="classificacao" required>
+                                    <option value="EMERGENCIA">Emergência</option>
+                                    <option value="MUITO_URGENTE">Muito Urgente</option>
+                                    <option value="URGENTE">Urgente</option>
+                                    <option value="POUCO_URGENTE">Pouco Urgente</option>
+                                    <option value="NAO_URGENTE">Não Urgente</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="criterio">Priorizar por:</label>
+                                <select id="criterio" name="criterio">
+                                    <option value="CLASSIFICACAO" {% if criterio == 'CLASSIFICACAO' %}selected{% endif %}>Classificação de emergência</option>
+                                    <option value="CHEGADA" {% if criterio == 'CHEGADA' %}selected{% endif %}>Horário de chegada</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Adicionar à Fila</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Painel da fila de atendimento -->
+                <section class="panel" id="fila">
+                    <div class="panel-header">
+                        <span>Fila de atendimento</span>
+                        <form method="POST" action="{{ url_for('atender') }}">
+                            <button type="submit" class="btn btn-success">Atender próximo</button>
+                        </form>
+                    </div>
+
+                    <div class="panel-body">
+                        <p class="hash-info">Capacidade da tabela hash: <strong>{{ capacidade }}</strong></p>
+
+                        {% if pacientes %}
+                        <ol class="patient-list">
+                            {% for paciente in pacientes %}
+                            <li class="patient-item">
+                                <div class="patient-details">
+                                    <span class="patient-pos">{{ loop.index }}º</span>
+                                    <div>
+                                        <div class="patient-name">{{ paciente.nome }}</div>
+                                        <div class="patient-time">{{ paciente.horario.strftime('%d/%m/%Y %H:%M') }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="patient-actions">
+                                    <span class="badge badge-{{ paciente.classificacao|lower }}">
+                                        {{ paciente.classificacao.replace('_', ' ') }}
+                                    </span>
+
+                                    <form method="POST" action="{{ url_for('remover', id_paciente=paciente.id) }}">
+                                        <button type="submit" class="btn btn-danger">Remover</button>
+                                    </form>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                        {% else %}
+                        <div class="empty-state">Não há pacientes na fila.</div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
 </body>
+
 </html>

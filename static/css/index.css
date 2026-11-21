@@ -1,0 +1,410 @@
+:root {
+  --bg-top: #0f4c5c;
+  --bg-sidebar: #145365;
+  --bg-sidebar-active: #1d6b82;
+  --bg-content: #f4f5f7;
+  --card-bg: #ffffff;
+  --border-color: #dcdcdc;
+  --text-main: #4a5568;
+  --text-muted: #7f8c9b;
+  --accent-blue: #3b7ea1;
+  --accent-green: #2e8b57;
+  --accent-red: #c94a4a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--bg-content);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Barra superior */
+.topbar {
+  height: 44px;
+  background-color: var(--bg-top);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
+.topbar-brand {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.topbar-actions {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Estrutura principal */
+.layout {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 44px);
+}
+
+/* Barra lateral */
+.sidebar {
+  width: 185px;
+  flex-shrink: 0;
+  background-color: var(--bg-sidebar);
+  color: #dce6ea;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo {
+  padding: 20px 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.logo-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff, #cfd8dc);
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bg-top);
+  font-weight: 700;
+  font-size: 32px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.nav-list {
+  list-style: none;
+}
+
+.nav-item a {
+  display: block;
+  padding: 11px 16px;
+  color: #d5e2e7;
+  text-decoration: none;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background-color 0.15s ease;
+}
+
+.nav-item a:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.nav-item.active a {
+  background-color: var(--bg-sidebar-active);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 #7ec8e3;
+}
+
+/* Área de conteúdo */
+.main-content {
+  flex: 1;
+  padding: 16px 22px 28px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e2e6ea;
+}
+
+.page-title {
+  font-size: 21px;
+  font-weight: 400;
+  color: #4a5568;
+}
+
+.page-subtitle {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.stats-bar {
+  display: flex;
+  gap: 24px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 2px;
+  display: block;
+}
+
+.stat-value.blue { color: var(--accent-blue); }
+.stat-value.green { color: var(--accent-green); }
+
+/* Grid dos dois painéis */
+.triage-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.panel {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.panel-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-body {
+  padding: 16px;
+}
+
+/* Formulário */
+.triage-form {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #555e68;
+}
+
+.form-group input,
+.form-group select {
+  padding: 8px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #2d3748;
+  background-color: #ffffff;
+  transition: border-color 0.15s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--bg-sidebar-active);
+}
+
+/* Botões */
+.btn {
+  border: none;
+  border-radius: 3px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.btn:hover {
+  opacity: 0.92;
+}
+
+.btn:active {
+  transform: scale(0.99);
+}
+
+.btn-primary {
+  background-color: var(--bg-sidebar);
+  color: #ffffff;
+  margin-top: 4px;
+}
+
+.btn-success {
+  background-color: var(--accent-green);
+  color: #ffffff;
+  padding: 6px 12px;
+}
+
+.btn-danger {
+  background-color: #f8d7da;
+  color: #842029;
+  border: 1px solid #f5c2c7;
+  padding: 5px 10px;
+  font-size: 11.5px;
+}
+
+.btn-danger:hover {
+  background-color: var(--accent-red);
+  color: #ffffff;
+  border-color: var(--accent-red);
+}
+
+/* Fila de pacientes */
+.hash-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.patient-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.patient-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+  background-color: #fcfdfe;
+}
+
+.patient-details {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.patient-pos {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: #e6eff3;
+  color: var(--bg-top);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.patient-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.patient-time {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.patient-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Etiquetas de classificação (Protocolo de Manchester) */
+.badge {
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-emergencia {
+  background-color: #fde8e8;
+  color: #c81e1e;
+  border: 1px solid #f8b4b4;
+}
+
+.badge-muito_urgente {
+  background-color: #feecdc;
+  color: #c05621;
+  border: 1px solid #fbd38d;
+}
+
+.badge-urgente {
+  background-color: #fefcbf;
+  color: #975a16;
+  border: 1px solid #f6e05e;
+}
+
+.badge-pouco_urgente {
+  background-color: #def7ec;
+  color: #03543f;
+  border: 1px solid #84e1bc;
+}
+
+.badge-nao_urgente {
+  background-color: #e1effe;
+  color: #1e429f;
+  border: 1px solid #a4cafe;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 28px 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .triage-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
