@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 CLASSIFICACAO_RISCO = {
     "EMERGENCIA": 1,
     "MUITO_URGENTE": 2,
@@ -6,9 +9,23 @@ CLASSIFICACAO_RISCO = {
     "NAO_URGENTE": 5,
 }
 
+
 class Paciente:
-    def __init__(self, nome,horario,id,classificação):
+    def __init__(self, nome, horario, id, classificacao):
         self.nome = nome
-        self.horario = horario
+        self.horario = self._normalizar_horario(horario)
         self.id = id
-        self.classificação = classificação
+        self.classificacao = classificacao.upper()
+
+    @staticmethod
+    def _normalizar_horario(horario):
+        if isinstance(horario, datetime):
+            return horario
+        if isinstance(horario, str):
+            texto = horario.strip()
+            if texto:
+                try:
+                    return datetime.fromisoformat(texto)
+                except ValueError:
+                    return datetime.min
+        return datetime.min

@@ -1,138 +1,129 @@
-from paciente import CLASSIFICACAO_RISCO, Paciente
+from models.paciente import CLASSIFICACAO_RISCO, Paciente
 
-class NoEncadeado:
-    def __init__(self, paciente: Paciente, proximo: "NoEncadeado | None" = None):
+
+class NoFila:
+    def __init__(self, paciente):
         self.paciente = paciente
-        self.proximo = proximo
+        self.proximo = None
 
 
-class FilaPrioridadeHashEncadeada:
-    def __init__(
-        self,
-        capacidade_inicial: int = 8,
-        fator_carga_maximo: float = 0.75,
-        arvore_rubro_negra=None,
-    ):
+class FilaHashEncadeada:
+    """Tabela hash dinâmica que resolve colisões por encadeamento."""
+
+    def __init__(self, capacidade_inicial=8, fator_carga=0.75,
+                 criterio="CLASSIFICACAO"):
+        if capacidade_inicial < 1:
+            raise ValueError("A capacidade inicial deve ser maior que zero.")
         self.capacidade = capacidade_inicial
-        self.fator_carga_maximo = fator_carga_maximo
-        self.quantidade = 0
-        self.tabela: list[NoEncadeado | None] = [None] * self.capacidade
-        # Referência futura para a Árvore Rubro-Negra (pode ser plugada depois)
-        self.arvore_rubro_negra = arvore_rubro_negra
+        self.fator_carga = fator_carga
+        self.criterio = criterio
+        self.buckets = [None] * capacidade_inicial
+        self.tamanho = 0
 
-    def vincular_arvore(self, arvore_rubro_negra) -> None:
-        """Permite acoplar a Árvore Rubro-Negra após instanciar a fila."""
-        self.arvore_rubro_negra = arvore_rubro_negra
+    def _validar_criterio(self, criterio):
+        if criterio not in ("CLASSIFICACAO", "CHEGADA"):
+            raise ValueError("Critério deve ser CLASSIFICACAO ou CHEGADA.")
 
-    def _hash(self, chave, capacidade: int | None = None) -> int:
-        cap = capacidade if capacidade is not None else self.capacidade
-        if isinstance(chave, int):
-            return chave % cap
-        soma = sum(ord(caractere) for caractere in str(chave))
-        return soma % cap
+    def definir_criterio(self, criterio):
+        criterio = criterio.upper()
+        self._validar_criterio(criterio)
+        self.criterio = criterio
 
-    @property
-    def fator_carga(self) -> float:
-        return self.quantidade / self.capacidade
+    def _indice(self, chave):
+        return hash(chave) % self.capacidade
 
-    def _redimensionar(self, nova_capacidade: int) -> None:
-        """Aumenta a tabela hash e reinsere os nós encadeados (rehashing)."""
-        tabela_antiga = self.tabela
-        self.capacidade = nova_capacidade
-        self.tabela = [None] * nova_capacidade
+    def adicionar(self, paciente):
+        if not isinstance(paciente, Paciente):
+            raise TypeError("O objeto deve ser um Paciente.")
 
-        for cabeca in tabela_antiga:
-            atual = cabeca
-            while atual is not None:
-                proximo_no = atual.proximo
-                indice = self._hash(atual.paciente.id, nova_capacidade)
-                # Insere no início do novo bucket
-                atual.proximo = self.tabela[indice]
-                self.tabela[indice] = atual
-                atual = proximo_no
-
-    def _notificar_insercao_arvore(self, paciente: Paciente) -> None:
-        if self.arvore_rubro_negra is not None and hasattr(
-            self.arvore_rubro_negra, "inserir"
-        ):
-            self.arvore_rubro_negra.inserir(paciente)
-
-    def _notificar_remocao_arvore(self, paciente: Paciente) -> None:
-        if self.arvore_rubro_negra is not None and hasattr(
-            self.arvore_rubro_negra, "remover"
-        ):
-            self.arvore_rubro_negra.remover(paciente)
-
-    def inserir(self, paciente: Paciente) -> int:
-        """Insere o paciente, cresce a tabela se necessário e notifica a árvore."""
-        if self.buscar_por_id(paciente.id) is not None:
-            raise ValueError(f"Já existe um paciente com ID {paciente.id}.")
-
-        # Cresce antes de inserir se ultrapassar o fator de carga
-        if (self.quantidade + 1) / self.capacidade > self.fator_carga_maximo:
-            self._redimensionar(self.capacidade * 2)
-
-        indice = self._hash(paciente.id)
-        novo_no = NoEncadeado(paciente=paciente, proximo=self.tabela[indice])
-        self.tabela[indice] = novo_no
-        self.quantidade += 1
-
-        self._notificar_insercao_arvore(paciente)
-        return indice
-
-    def buscar_por_id(self, paciente_id) -> Paciente | None:
-        indice = self._hash(paciente_id)
-        atual = self.tabela[indice]
+        indice = self._indice(paciente.id)
+        atual = self.buckets[indice]
         while atual is not None:
-            if atual.paciente.id == paciente_id:
+            if atual.paciente.id == paciente.id:
+                atual.paciente = paciente
+                return False
+            atual = atual.proximo
+
+        novo = NoFila(paciente)
+        novo.proximo = self.buckets[indice]
+        self.buckets[indice] = novo
+        self.tamanho += 1
+
+        if self.tamanho / self.capacidade >= self.fator_carga:
+            self._redimensionar(self.capacidade * 2)
+        return True
+
+    def inserir(self, paciente):
+        return self.adicionar(paciente)
+
+    def buscar(self, id_paciente):
+        atual = self.buckets[self._indice(id_paciente)]
+        while atual is not None:
+            if atual.paciente.id == id_paciente:
                 return atual.paciente
             atual = atual.proximo
         return None
 
-    def remover_por_id(self, paciente_id) -> Paciente | None:
-        indice = self._hash(paciente_id)
-        atual = self.tabela[indice]
-        anterior: NoEncadeado | None = None
+    def remover(self, id_paciente):
+        indice = self._indice(id_paciente)
+        atual = self.buckets[indice]
+        anterior = None
 
         while atual is not None:
-            if atual.paciente.id == paciente_id:
+            if atual.paciente.id == id_paciente:
                 if anterior is None:
-                    self.tabela[indice] = atual.proximo
+                    self.buckets[indice] = atual.proximo
                 else:
                     anterior.proximo = atual.proximo
-                self.quantidade -= 1
-                removido = atual.paciente
-                self._notificar_remocao_arvore(removido)
-                return removido
+                self.tamanho -= 1
+                return atual.paciente
             anterior = atual
             atual = atual.proximo
-
         return None
 
-    def _chave_prioridade(self, paciente: Paciente):
-        peso_risco = CLASSIFICACAO_RISCO.get(paciente.classificação, 99)
-        return (peso_risco, paciente.horario)
+    def _chave_prioridade(self, paciente):
+        classificacao = CLASSIFICACAO_RISCO.get(
+            paciente.classificacao, len(CLASSIFICACAO_RISCO) + 1
+        )
+        if self.criterio == "CHEGADA":
+            return (paciente.horario, classificacao)
+        return (classificacao, paciente.horario)
 
-    def listar_todos(self) -> list[Paciente]:
-        """Percorre todos os buckets e nós encadeados."""
-        pacientes: list[Paciente] = []
-        for cabeca in self.tabela:
-            atual = cabeca
+    def proximo(self):
+        melhor = None
+
+        for inicio in self.buckets:
+            atual = inicio
+            while atual is not None:
+                paciente = atual.paciente
+                if melhor is None or self._chave_prioridade(paciente) < self._chave_prioridade(melhor):
+                    melhor = paciente
+                atual = atual.proximo
+        return melhor
+
+    def atender_proximo(self):
+        paciente = self.proximo()
+        return self.remover(paciente.id) if paciente is not None else None
+
+    def listar(self):
+        pacientes = []
+        for inicio in self.buckets:
+            atual = inicio
             while atual is not None:
                 pacientes.append(atual.paciente)
                 atual = atual.proximo
-        return pacientes
+        return sorted(pacientes, key=self._chave_prioridade)
 
-    def listar_ordenados(self) -> list[Paciente]:
-        """
-        Quando a Árvore Rubro-Negra estiver pronta, você pode delegar
-        a ordenação/consulta de prioridade a ela se desejar.
-        """
-        return sorted(self.listar_todos(), key=self._chave_prioridade)
+    def _redimensionar(self, nova_capacidade):
+        buckets_antigos = self.buckets
+        self.capacidade = nova_capacidade
+        self.buckets = [None] * nova_capacidade
 
-    def atender_proximo(self) -> Paciente | None:
-        ordenados = self.listar_ordenados()
-        if not ordenados:
-            return None
-        proximo = ordenados[0]
-        return self.remover_por_id(proximo.id)
+        for inicio in buckets_antigos:
+            atual = inicio
+            while atual is not None:
+                seguinte = atual.proximo
+                indice = self._indice(atual.paciente.id)
+                atual.proximo = self.buckets[indice]
+                self.buckets[indice] = atual
+                atual = seguinte

@@ -1,7 +1,52 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, redirect, render_template, request, url_for
 
-app = flask.Flask(__name__)
+from models.fila_prioridade import FilaHashEncadeada
+from models.paciente import Paciente
 
-@app.route("/", methods=["GET"])
+
+app = Flask(__name__)
+fila = FilaHashEncadeada()
+proximo_id = 1
+
+
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html")
+    global proximo_id
+
+    if request.method == "POST":
+        criterio = request.form.get("criterio", "CLASSIFICACAO").upper()
+        fila.definir_criterio(criterio)
+
+        nome = request.form.get("nome", "").strip()
+        horario = request.form.get("horario", "").strip()
+        classificacao = request.form.get("classificacao", "").upper()
+
+        if nome and horario and classificacao:
+            paciente = Paciente(nome, horario, proximo_id, classificacao)
+            fila.adicionar(paciente)
+            proximo_id += 1
+
+        return redirect(url_for("index"))
+
+    return render_template(
+        "index.html",
+        pacientes=fila.listar(),
+        criterio=fila.criterio,
+        capacidade=fila.capacidade,
+    )
+
+
+@app.route("/atender", methods=["POST"])
+def atender():
+    fila.atender_proximo()
+    return redirect(url_for("index"))
+
+
+@app.route("/remover/<int:id_paciente>", methods=["POST"])
+def remover(id_paciente):
+    fila.remover(id_paciente)
+    return redirect(url_for("index"))
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
