@@ -9,9 +9,26 @@
 <body>
 
     <h1>Sistema de Triagem Hospitalar</h1>
-
     <p>Bem-vindo ao sistema do Hospital.</p>
 
-</body>
+    <form method="POST">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" required>
+        <br><br>
+        <label for="horario">Horário:</label>
+        <input type="datetime-local" id="horario" name="horario" required>
+        <br><br>
+        <label for="classificacao">Classificação:</label>
+        <select id="classificacao" name="classificacao" required>
+            <option value="EMERGENCIA">Emergência</option>
+            <option value="MUITO_URGENTE">Muito Urgente</option>
+            <option value="URGENTE">Urgente</option>
+            <option value="POUCO_URGENTE">Pouco Urgente</option>
+            <option value="NAO_URGENTE">Não Urgente</option>
+        </select>
+        <br><br>
+        <input type="submit" value="Adicionar à Fila">
+    </form>
 
+</body>
 </html>
