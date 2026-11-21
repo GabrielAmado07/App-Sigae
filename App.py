@@ -14,9 +14,6 @@ def index():
     global proximo_id
 
     if request.method == "POST":
-        criterio = request.form.get("criterio", "CLASSIFICACAO").upper()
-        fila.definir_criterio(criterio)
-
         nome = request.form.get("nome", "").strip()
         horario = request.form.get("horario", "").strip()
         classificacao = request.form.get("classificacao", "").upper()
@@ -31,7 +28,6 @@ def index():
     return render_template(
         "index.html",
         pacientes=fila.listar(),
-        criterio=fila.criterio,
         capacidade=fila.capacidade,
     )
 
