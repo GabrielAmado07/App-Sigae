@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 
 
 CLASSIFICACAO_RISCO = {
@@ -27,5 +27,8 @@ class Paciente:
                 try:
                     return datetime.fromisoformat(texto)
                 except ValueError:
-                    return datetime.min
+                    try:
+                        return datetime.combine(datetime.min.date(), time.fromisoformat(texto))
+                    except ValueError:
+                        return datetime.min
         return datetime.min
