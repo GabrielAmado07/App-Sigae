@@ -10,24 +10,13 @@ class NoFila:
 class FilaHashEncadeada:
     """Tabela hash dinâmica que resolve colisões por encadeamento."""
 
-    def __init__(self, capacidade_inicial=8, fator_carga=0.75,
-                 criterio="CLASSIFICACAO"):
+    def __init__(self, capacidade_inicial=8, fator_carga=0.75):
         if capacidade_inicial < 1:
             raise ValueError("A capacidade inicial deve ser maior que zero.")
         self.capacidade = capacidade_inicial
         self.fator_carga = fator_carga
-        self.criterio = criterio
         self.buckets = [None] * capacidade_inicial
         self.tamanho = 0
-
-    def _validar_criterio(self, criterio):
-        if criterio not in ("CLASSIFICACAO", "CHEGADA"):
-            raise ValueError("Critério deve ser CLASSIFICACAO ou CHEGADA.")
-
-    def definir_criterio(self, criterio):
-        criterio = criterio.upper()
-        self._validar_criterio(criterio)
-        self.criterio = criterio
 
     def _indice(self, chave):
         return hash(chave) % self.capacidade
@@ -85,8 +74,6 @@ class FilaHashEncadeada:
         classificacao = CLASSIFICACAO_RISCO.get(
             paciente.classificacao, len(CLASSIFICACAO_RISCO) + 1
         )
-        if self.criterio == "CHEGADA":
-            return (paciente.horario, classificacao)
         return (classificacao, paciente.horario)
 
     def proximo(self):
