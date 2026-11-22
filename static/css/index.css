@@ -942,3 +942,49 @@ body {
   font-size: 22px;
   font-weight: bold;
 }
+/* ===== COMMIT 9 - DETALHES VISUAIS DOS PAINEIS ===== */
+.panel {
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.panel-body {
+  background: #ffffff;
+}
+
+.panel + .panel {
+  margin-top: 20px;
+}
+
+.stats-bar {
+  margin-bottom: 22px;
+}
+
+.stat-item {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.stat-item:hover {
+  border-color: #bfdbfe;
+}
+
+@media (max-width: 680px) {
+  .panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .panel + .panel {
+    margin-top: 14px;
+  }
+}
