@@ -1137,3 +1137,41 @@ button {
     animation-duration: 0.01ms !important;
   }
 }
+/* ===== COMMIT 13 - ACESSIBILIDADE ===== */
+
+:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 3px;
+}
+
+button,
+select,
+input {
+  font-size: 14px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+label {
+  cursor: pointer;
+}
+
+@media (prefers-contrast: more) {
+  .panel,
+  .patient-item,
+  .stat-item {
+    border: 2px solid #334155;
+  }
+
+  .badge {
+    border: 1px solid currentColor;
+  }
+}
+
+::selection {
+  background: #bfdbfe;
+  color: #1e3a8a;
+}
