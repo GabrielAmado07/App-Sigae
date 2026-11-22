@@ -850,3 +850,55 @@ body {
   background: #dbeafe;
   color: #1d4ed8;
 }
+/* ===== COMMIT 7 - MELHORIA DOS BOTOES ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease,
+              transform 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 9px rgba(15, 23, 42, 0.12);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.3);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-danger {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
