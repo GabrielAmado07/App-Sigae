@@ -988,3 +988,77 @@ body {
     margin-top: 14px;
   }
 }
+/* ===== COMMIT 10 - RESPONSIVIDADE DA INTERFACE ===== */
+
+@media (max-width: 900px) {
+  .layout {
+    flex-wrap: wrap;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-item {
+    padding: 10px 14px;
+  }
+
+  .main-content {
+    width: 100%;
+    padding: 22px;
+  }
+
+  .triage-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .main-content {
+    padding: 14px;
+  }
+
+  .page-title {
+    font-size: 21px;
+  }
+
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .stat-item {
+    min-width: 0;
+    padding: 12px 8px;
+  }
+
+  .triage-form {
+    width: 100%;
+  }
+
+  .patient-item {
+    width: 100%;
+  }
+
+  .patient-actions {
+    justify-content: flex-start;
+  }
+
+  .btn {
+    max-width: 100%;
+  }
+}
