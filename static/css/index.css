@@ -1062,3 +1062,36 @@ body {
     max-width: 100%;
   }
 }
+/* ===== COMMIT 11 - VALIDACAO VISUAL DO FORMULARIO ===== */
+
+.form-group input:required,
+.form-group select:required {
+  background-color: #ffffff;
+}
+
+.form-group input:invalid:not(:placeholder-shown) {
+  border-color: #dc2626;
+}
+
+.form-group input:valid {
+  border-color: #86bca0;
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 2px;
+}
