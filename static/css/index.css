@@ -1095,3 +1095,45 @@ body {
   display: block;
   margin-bottom: 2px;
 }
+/* ===== COMMIT 12 - INTERACOES VISUAIS ===== */
+
+.nav-item,
+.btn,
+.patient-item,
+.stat-item,
+.logo-circle {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item:active {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.patient-item:focus-within {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.panel {
+  transition: box-shadow 0.2s ease;
+}
+
+.panel:hover {
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.07);
+}
+
+input,
+select,
+button {
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
