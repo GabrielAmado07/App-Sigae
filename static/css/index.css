@@ -813,3 +813,40 @@ body {
     justify-content: flex-end;
   }
 }
+/* ===== COMMIT 6 - CORES DAS CLASSIFICACOES ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  border-radius: 20px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.badge-emergencia {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge-muito-urgente {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.badge-urgente {
+  background: #fef3c7;
+  color: #a16207;
+}
+
+.badge-pouco-urgente {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-nao-urgente {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
