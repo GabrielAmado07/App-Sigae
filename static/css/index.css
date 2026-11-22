@@ -1175,3 +1175,70 @@ label {
   background: #bfdbfe;
   color: #1e3a8a;
 }
+/* ===== COMMIT FINAL - ACESSIBILIDADE E ACABAMENTO ===== */
+
+:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 3px;
+}
+
+button,
+select,
+input {
+  font-family: inherit;
+}
+
+label {
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.panel,
+.patient-item,
+.stat-item {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+::selection {
+  background: #bfdbfe;
+  color: #1e3a8a;
+}
+
+@media (prefers-contrast: more) {
+  .panel,
+  .patient-item,
+  .stat-item {
+    border: 2px solid #334155;
+  }
+
+  .badge {
+    border: 1px solid currentColor;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 19px;
+  }
+
+  .panel-body {
+    padding: 14px;
+  }
+
+  .patient-details {
+    flex-wrap: wrap;
+  }
+
+  .patient-actions .btn {
+    flex: 1;
+  }
+}
