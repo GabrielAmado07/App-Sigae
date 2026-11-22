@@ -408,3 +408,159 @@ body {
     gap: 10px;
   }
 }
+
+
+/* ===== MODERNIZACAO VISUAL - SIGAE ===== */
+
+:root {
+  --bg-top: #123b55;
+  --bg-sidebar: #163f59;
+  --bg-sidebar-active: #245e7c;
+  --bg-content: #f1f5f9;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --text-main: #334155;
+  --text-muted: #64748b;
+  --accent-blue: #2563eb;
+  --accent-green: #16a34a;
+  --accent-red: #dc2626;
+}
+
+/* Melhorias gerais */
+body {
+  background-color: var(--bg-content);
+  color: var(--text-main);
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Barra superior */
+.topbar {
+  height: 58px;
+  padding: 0 28px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+/* Menu lateral */
+.sidebar {
+  width: 220px;
+  box-shadow: 2px 0 10px rgba(15, 23, 42, 0.08);
+}
+
+.logo-circle {
+  width: 76px;
+  height: 76px;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Conteudo */
+.main-content {
+  padding: 28px 32px;
+}
+
+.page-title {
+  font-size: 25px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+/* Paineis */
+.panel {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.panel-header {
+  padding: 16px 18px;
+  font-size: 15px;
+  background-color: #f8fafc;
+}
+
+.panel-body {
+  padding: 20px;
+}
+
+/* Campos do formulario */
+.form-group input,
+.form-group select {
+  padding: 11px 12px;
+  border-radius: 7px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Botoes */
+.btn {
+  border-radius: 7px;
+  padding: 10px 16px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--accent-blue);
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+/* Lista de pacientes */
+.patient-item {
+  border-radius: 8px;
+  padding: 14px;
+  background-color: #ffffff;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.patient-item:hover {
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.07);
+  transform: translateY(-1px);
+}
+
+.patient-pos {
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+}
+
+/* Etiquetas */
+.badge {
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .main-content {
+    padding: 22px;
+  }
+}
+
+@media (max-width: 680px) {
+  .main-content {
+    padding: 16px;
+  }
+
+  .topbar {
+    padding: 0 14px;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .stats-bar {
+    gap: 30px;
+  }
+}
