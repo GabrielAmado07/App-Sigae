@@ -100,6 +100,20 @@
                                         {{ paciente.classificacao.replace('_', ' ') }}
                                     </span>
                                     <span class="badge badge-aguardando">Situação: Aguardando</span>
+                                    <form method="POST"
+                                        action="{{ url_for('reclassificar', id_paciente=paciente.id) }}"
+                                        class="reclassify-form">
+                                        <select name="classificacao"
+                                            aria-label="Nova classificação para {{ paciente.nome }} (ID {{ paciente.id }})"
+                                            required>
+                                            <option value="EMERGENCIA" {% if paciente.classificacao == "EMERGENCIA" %}selected{% endif %}>Emergência</option>
+                                            <option value="MUITO_URGENTE" {% if paciente.classificacao == "MUITO_URGENTE" %}selected{% endif %}>Muito Urgente</option>
+                                            <option value="URGENTE" {% if paciente.classificacao == "URGENTE" %}selected{% endif %}>Urgente</option>
+                                            <option value="POUCO_URGENTE" {% if paciente.classificacao == "POUCO_URGENTE" %}selected{% endif %}>Pouco Urgente</option>
+                                            <option value="NAO_URGENTE" {% if paciente.classificacao == "NAO_URGENTE" %}selected{% endif %}>Não Urgente</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary btn-reclassify">Reclassificar</button>
+                                    </form>
                                 </div>
                             </li>
                             {% endfor %}

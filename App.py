@@ -1,7 +1,7 @@
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, url_for
 
 from models.fila_prioridade import FilaHashEncadeada
-from models.paciente import Paciente
+from models.paciente import CLASSIFICACAO_RISCO, Paciente
 
 
 app = Flask(__name__)
@@ -57,6 +57,20 @@ def cadastro():
 @app.route("/atender", methods=["POST"])
 def atender():
     fila.atender_proximo()
+    return redirect(url_for("index"))
+
+
+@app.route("/reclassificar/<int:id_paciente>", methods=["POST"])
+def reclassificar(id_paciente):
+    paciente = fila.buscar(id_paciente)
+    if paciente is None:
+        abort(404, description="Paciente não encontrado na fila.")
+
+    classificacao = request.form.get("classificacao", "").strip().upper()
+    if classificacao not in CLASSIFICACAO_RISCO:
+        abort(400, description="Classificação de risco inválida.")
+
+    paciente.classificacao = classificacao
     return redirect(url_for("index"))
 
 
