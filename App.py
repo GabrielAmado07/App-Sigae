@@ -11,6 +11,12 @@ fila = FilaHashEncadeada()
 proximo_id = 1
 pacientes_atendidos = []
 atendimento_atual = None
+medicos = []
+UFS_BRASILEIRAS = {
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT",
+    "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO",
+    "RR", "SC", "SP", "SE", "TO",
+}
 
 
 @app.route("/")
@@ -86,6 +92,36 @@ def cadastro():
         return redirect(url_for("index"))
 
     return render_template("cadastro.html")
+
+
+@app.route("/medicos", methods=["GET", "POST"])
+def cadastro_medicos():
+    if request.method == "POST":
+        nome = request.form.get("nome", "").strip()
+        crm = request.form.get("crm", "").strip().upper()
+        uf_crm = request.form.get("uf_crm", "").strip().upper()
+        especialidade = request.form.get("especialidade", "").strip()
+        telefone = request.form.get("telefone", "").strip()
+        email = request.form.get("email", "").strip()
+
+        if not nome or not crm or not uf_crm or not especialidade:
+            abort(400, description="Nome, CRM, UF do CRM e especialidade são obrigatórios.")
+        if uf_crm not in UFS_BRASILEIRAS:
+            abort(400, description="Informe uma UF válida para o CRM.")
+        if any(medico["crm"] == crm and medico["uf_crm"] == uf_crm for medico in medicos):
+            abort(409, description="Já existe um médico cadastrado com este CRM e UF.")
+
+        medicos.append({
+            "nome": nome,
+            "crm": crm,
+            "uf_crm": uf_crm,
+            "especialidade": especialidade,
+            "telefone": telefone,
+            "email": email,
+        })
+        return redirect(url_for("cadastro_medicos"))
+
+    return render_template("medicos.html", medicos=medicos)
 
 
 @app.route("/atender", methods=["POST"])
