@@ -170,6 +170,10 @@ body {
   align-items: start;
 }
 
+.registration-grid {
+  grid-template-columns: minmax(0, 640px);
+}
+
 .panel {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
