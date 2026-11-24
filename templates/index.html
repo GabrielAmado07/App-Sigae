@@ -44,6 +44,10 @@
                         <span class="stat-value blue">{{ pacientes|length if pacientes else 0 }}</span>
                     </div>
                     <div class="stat-item">
+                        <span class="stat-label">Atendidos</span>
+                        <span class="stat-value green">{{ pacientes_atendidos|length }}</span>
+                    </div>
+                    <div class="stat-item">
                         <span class="stat-label">Capacidade Hash</span>
                         <span class="stat-value green">{{ capacidade }}</span>
                     </div>
@@ -120,6 +124,43 @@
                         </ol>
                         {% else %}
                         <div class="empty-state">Não há pacientes na fila.</div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <section class="panel" id="atendidos">
+                    <div class="panel-header">
+                        <span>Pacientes já atendidos</span>
+                    </div>
+
+                    <div class="panel-body">
+                        {% if pacientes_atendidos %}
+                        <ol class="patient-list attended-list">
+                            {% for atendimento in pacientes_atendidos|reverse %}
+                            <li class="patient-item attended-item">
+                                <div class="patient-details">
+                                    <span class="patient-pos">{{ loop.revindex }}º</span>
+                                    <div>
+                                        <div class="patient-name">{{ atendimento.paciente.nome }}</div>
+                                        <div class="patient-time">
+                                            ID: {{ atendimento.paciente.id }} ·
+                                            Chegada: {{ atendimento.paciente.horario.strftime('%H:%M') }} ·
+                                            Atendimento: {{ atendimento.atendido_em.strftime('%H:%M') }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="patient-actions">
+                                    <span class="badge badge-{{ atendimento.paciente.classificacao|lower|replace('_', '-') }}">
+                                        {{ atendimento.paciente.classificacao.replace('_', ' ') }}
+                                    </span>
+                                    <span class="badge badge-atendido">Situação: Atendido</span>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                        {% else %}
+                        <div class="empty-state">Nenhum paciente foi atendido ainda.</div>
                         {% endif %}
                     </div>
                 </section>

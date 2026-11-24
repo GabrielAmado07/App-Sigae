@@ -165,7 +165,7 @@ body {
 /* Grid dos dois painéis */
 .triage-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   align-items: start;
 }
@@ -917,6 +917,16 @@ body {
 .badge-aguardando {
   background: #e2e8f0;
   color: #334155;
+}
+
+.badge-atendido {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.attended-item {
+  border-left: 4px solid #16a34a;
 }
 
 /* ===== COMMIT 7 - MELHORIA DOS BOTOES ===== */

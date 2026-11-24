@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, abort, redirect, render_template, request, url_for
 
 from models.fila_prioridade import FilaHashEncadeada
@@ -7,6 +9,7 @@ from models.paciente import CLASSIFICACAO_RISCO, Paciente
 app = Flask(__name__)
 fila = FilaHashEncadeada()
 proximo_id = 1
+pacientes_atendidos = []
 
 
 @app.route("/")
@@ -29,6 +32,7 @@ def index():
         "index.html",
         pacientes=fila.listar(),
         capacidade=fila.capacidade,
+        pacientes_atendidos=pacientes_atendidos,
         id_busca=id_busca,
         paciente_encontrado=paciente_encontrado,
         mensagem_busca=mensagem_busca,
@@ -61,7 +65,12 @@ def cadastro():
 
 @app.route("/atender", methods=["POST"])
 def atender():
-    fila.atender_proximo()
+    paciente = fila.atender_proximo()
+    if paciente is not None:
+        pacientes_atendidos.append({
+            "paciente": paciente,
+            "atendido_em": datetime.now(),
+        })
     return redirect(url_for("index"))
 
 
