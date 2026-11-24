@@ -165,9 +165,13 @@ body {
 /* Grid dos dois painéis */
 .triage-grid {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+}
+
+.registration-grid {
+  grid-template-columns: minmax(0, 720px);
 }
 
 .panel {

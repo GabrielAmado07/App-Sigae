@@ -42,12 +42,17 @@ def cadastro():
     if request.method == "POST":
         nome = request.form.get("nome", "").strip()
         horario = request.form.get("horario", "").strip()
-        classificacao = request.form.get("classificacao", "").upper()
+        classificacao = request.form.get("classificacao", "").strip().upper()
 
-        if nome and horario and classificacao:
-            paciente = Paciente(nome, horario, proximo_id, classificacao)
-            fila.adicionar(paciente)
-            proximo_id += 1
+        if not nome or not horario:
+            abort(400, description="Nome e horário são obrigatórios.")
+
+        if classificacao not in CLASSIFICACAO_RISCO:
+            abort(400, description="Classificação de risco inválida.")
+
+        paciente = Paciente(nome, horario, proximo_id, classificacao)
+        fila.adicionar(paciente)
+        proximo_id += 1
 
         return redirect(url_for("index"))
 
