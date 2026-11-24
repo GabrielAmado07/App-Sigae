@@ -54,12 +54,53 @@
                 </div>
             </div>
 
+            <section class="panel current-attendance" id="atendimento-atual">
+                <div class="panel-header">
+                    <span>Atendimento Atual</span>
+                    {% if atendimento_atual %}
+                    <span class="badge badge-em-atendimento">Em atendimento</span>
+                    {% endif %}
+                </div>
+
+                <div class="panel-body">
+                    {% if atendimento_atual %}
+                    <div class="current-patient">
+                        <div class="patient-details">
+                            <span class="patient-pos">!</span>
+                            <div>
+                                <div class="patient-name">{{ atendimento_atual.paciente.nome }}</div>
+                                <div class="patient-time">
+                                    ID: {{ atendimento_atual.paciente.id }} ·
+                                    Chegada: {{ atendimento_atual.paciente.horario.strftime('%H:%M') }} ·
+                                    Chamado: {{ atendimento_atual.chamado_em.strftime('%H:%M') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="patient-actions">
+                            <span class="badge badge-{{ atendimento_atual.paciente.classificacao|lower|replace('_', '-') }}">
+                                {{ atendimento_atual.paciente.classificacao.replace('_', ' ') }}
+                            </span>
+                            <form method="POST" action="{{ url_for('finalizar_atendimento') }}">
+                                <button type="submit" class="btn btn-success">Finalizar Atendimento</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">Nenhum paciente em atendimento.</div>
+                    {% endif %}
+                </div>
+            </section>
+
             <div class="triage-grid">
                 <section class="panel" id="fila">
                     <div class="panel-header">
                         <span>Fila de atendimento</span>
                         <form method="POST" action="{{ url_for('atender') }}">
-                            <button type="submit" class="btn btn-success">Atender próximo</button>
+                            <button type="submit" class="btn btn-success"
+                                {% if atendimento_atual or not pacientes %}disabled{% endif %}>
+                                Chamar próximo
+                            </button>
                         </form>
                     </div>
 

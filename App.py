@@ -10,6 +10,7 @@ app = Flask(__name__)
 fila = FilaHashEncadeada()
 proximo_id = 1
 pacientes_atendidos = []
+atendimento_atual = None
 
 
 @app.route("/")
@@ -33,6 +34,7 @@ def index():
         pacientes=fila.listar(),
         capacidade=fila.capacidade,
         pacientes_atendidos=pacientes_atendidos,
+        atendimento_atual=atendimento_atual,
         id_busca=id_busca,
         paciente_encontrado=paciente_encontrado,
         mensagem_busca=mensagem_busca,
@@ -65,12 +67,35 @@ def cadastro():
 
 @app.route("/atender", methods=["POST"])
 def atender():
+    global atendimento_atual
+
+    if atendimento_atual is not None:
+        abort(409, description="Finalize o atendimento atual antes de chamar outro paciente.")
+
     paciente = fila.atender_proximo()
     if paciente is not None:
-        pacientes_atendidos.append({
+        paciente.status = "EM_ATENDIMENTO"
+        atendimento_atual = {
             "paciente": paciente,
-            "atendido_em": datetime.now(),
-        })
+            "chamado_em": datetime.now(),
+        }
+    return redirect(url_for("index"))
+
+
+@app.route("/finalizar", methods=["POST"])
+def finalizar_atendimento():
+    global atendimento_atual
+
+    if atendimento_atual is None:
+        abort(404, description="Não há paciente em atendimento.")
+
+    paciente = atendimento_atual["paciente"]
+    paciente.status = "ATENDIDO"
+    pacientes_atendidos.append({
+        "paciente": paciente,
+        "atendido_em": datetime.now(),
+    })
+    atendimento_atual = None
     return redirect(url_for("index"))
 
 

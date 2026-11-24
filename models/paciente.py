@@ -16,6 +16,7 @@ class Paciente:
         self.horario = self._normalizar_horario(horario)
         self.id = id
         self.classificacao = classificacao.upper()
+        self.status = "AGUARDANDO"
 
     @staticmethod
     def _normalizar_horario(horario):
