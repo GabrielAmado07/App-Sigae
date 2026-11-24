@@ -74,7 +74,8 @@
                             Encontrado: <strong>{{ paciente_encontrado.nome }}</strong>
                             (ID: {{ paciente_encontrado.id }}) —
                             {{ paciente_encontrado.classificacao.replace('_', ' ') }},
-                            {{ paciente_encontrado.horario.strftime('%d/%m/%Y %H:%M') }}.
+                            Chegada: {{ paciente_encontrado.horario.strftime('%H:%M') }},
+                            Situação: Aguardando.
                         </p>
                         {% elif mensagem_busca %}
                         <p class="search-message search-error" role="alert">{{ mensagem_busca }}</p>
@@ -90,7 +91,7 @@
                                     <span class="patient-pos">{{ loop.index }}º</span>
                                     <div>
                                         <div class="patient-name">{{ paciente.nome }}</div>
-                                        <div class="patient-time">ID: {{ paciente.id }} · {{ paciente.horario.strftime('%d/%m/%Y %H:%M') }}</div>
+                                        <div class="patient-time">ID: {{ paciente.id }} · Chegada: {{ paciente.horario.strftime('%H:%M') }}</div>
                                     </div>
                                 </div>
 
@@ -98,6 +99,7 @@
                                     <span class="badge badge-{{ paciente.classificacao|lower }}">
                                         {{ paciente.classificacao.replace('_', ' ') }}
                                     </span>
+                                    <span class="badge badge-aguardando">Situação: Aguardando</span>
                                 </div>
                             </li>
                             {% endfor %}

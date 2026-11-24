@@ -878,6 +878,12 @@ body {
   background: #dbeafe;
   color: #1d4ed8;
 }
+
+.badge-aguardando {
+  background: #e2e8f0;
+  color: #334155;
+}
+
 /* ===== COMMIT 7 - MELHORIA DOS BOTOES ===== */
 .btn {
   display: inline-flex;
