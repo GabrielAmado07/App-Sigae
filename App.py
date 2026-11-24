@@ -9,8 +9,17 @@ fila = FilaHashEncadeada()
 proximo_id = 1
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
+    return render_template(
+        "index.html",
+        pacientes=fila.listar(),
+        capacidade=fila.capacidade,
+    )
+
+
+@app.route("/cadastro", methods=["GET", "POST"])
+def cadastro():
     global proximo_id
 
     if request.method == "POST":
@@ -25,11 +34,7 @@ def index():
 
         return redirect(url_for("index"))
 
-    return render_template(
-        "index.html",
-        pacientes=fila.listar(),
-        capacidade=fila.capacidade,
-    )
+    return render_template("cadastro.html")
 
 
 @app.route("/atender", methods=["POST"])
