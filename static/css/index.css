@@ -170,6 +170,57 @@ body {
   align-items: start;
 }
 
+.queue-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.removal-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.removal-form .form-group {
+  flex: 1;
+}
+
+.removal-form .btn {
+  margin-top: 0;
+  white-space: nowrap;
+}
+
+.removal-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.removal-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff7f7;
+}
+
+.removal-result div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.removal-result span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .registration-grid {
   grid-template-columns: minmax(0, 720px);
 }
@@ -879,6 +930,16 @@ body {
 @media (max-width: 680px) {
   .patient-item {
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .removal-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .removal-result {
+    align-items: stretch;
     flex-direction: column;
   }
 

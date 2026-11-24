@@ -16,8 +16,11 @@ atendimento_atual = None
 @app.route("/")
 def index():
     id_busca = request.args.get("id", "").strip()
+    termo_remocao = request.args.get("remover", "").strip()
     paciente_encontrado = None
     mensagem_busca = None
+    candidatos_remocao = []
+    mensagem_remocao = None
 
     if id_busca:
         try:
@@ -29,6 +32,23 @@ def index():
             if paciente_encontrado is None:
                 mensagem_busca = f"Nenhum paciente encontrado com o ID {id_paciente}."
 
+    if termo_remocao:
+        candidatos_remocao = []
+        try:
+            id_remocao = int(termo_remocao)
+        except ValueError:
+            termo_normalizado = termo_remocao.casefold()
+            candidatos_remocao = [
+                paciente for paciente in fila.listar()
+                if termo_normalizado in paciente.nome.casefold()
+            ]
+        else:
+            paciente = fila.buscar(id_remocao)
+            candidatos_remocao = [paciente] if paciente is not None else []
+
+        if not candidatos_remocao:
+            mensagem_remocao = f"Nenhum paciente encontrado para remoção: {termo_remocao}."
+
     return render_template(
         "index.html",
         pacientes=fila.listar(),
@@ -38,6 +58,9 @@ def index():
         id_busca=id_busca,
         paciente_encontrado=paciente_encontrado,
         mensagem_busca=mensagem_busca,
+        termo_remocao=termo_remocao,
+        candidatos_remocao=candidatos_remocao,
+        mensagem_remocao=mensagem_remocao,
     )
 
 
@@ -115,7 +138,9 @@ def reclassificar(id_paciente):
 
 @app.route("/remover/<int:id_paciente>", methods=["POST"])
 def remover(id_paciente):
-    fila.remover(id_paciente)
+    paciente = fila.remover(id_paciente)
+    if paciente is not None:
+        paciente.status = "REMOVIDO"
     return redirect(url_for("index"))
 
 

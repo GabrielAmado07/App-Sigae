@@ -93,6 +93,7 @@
             </section>
 
             <div class="triage-grid">
+                <div class="queue-column">
                 <section class="panel" id="fila">
                     <div class="panel-header">
                         <span>Fila de atendimento</span>
@@ -168,6 +169,51 @@
                         {% endif %}
                     </div>
                 </section>
+
+                <section class="panel removal-panel" id="remocao">
+                    <div class="panel-header">
+                        <span>Remover paciente da fila</span>
+                    </div>
+
+                    <div class="panel-body">
+                        <form method="GET" action="{{ url_for('index') }}" class="removal-form">
+                            <div class="form-group">
+                                <label for="remover">Nome ou ID:</label>
+                                <input type="text" id="remover" name="remover"
+                                    value="{{ termo_remocao }}" placeholder="Ex.: Maria ou 5"
+                                    autocomplete="off" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Buscar para remover</button>
+                        </form>
+
+                        {% if mensagem_remocao %}
+                        <p class="search-message search-error" role="alert">{{ mensagem_remocao }}</p>
+                        {% endif %}
+
+                        {% if candidatos_remocao %}
+                        <div class="removal-results">
+                            {% for paciente in candidatos_remocao %}
+                            <div class="removal-result">
+                                <div>
+                                    <strong>{{ paciente.nome }}</strong>
+                                    <span>ID: {{ paciente.id }} · {{ paciente.classificacao.replace('_', ' ') }}</span>
+                                </div>
+                                <form method="POST"
+                                    action="{{ url_for('remover', id_paciente=paciente.id) }}">
+                                    <button type="submit" class="btn btn-danger"
+                                        onclick="return confirm('Remover {{ paciente.nome|e }} da fila?');">
+                                        Remover
+                                    </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% elif termo_remocao and not mensagem_remocao %}
+                        <div class="empty-state">Nenhum paciente encontrado.</div>
+                        {% endif %}
+                    </div>
+                </section>
+                </div>
 
                 <section class="panel" id="atendidos">
                     <div class="panel-header">
