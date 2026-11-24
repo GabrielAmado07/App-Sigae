@@ -2,8 +2,9 @@ from models.paciente import CLASSIFICACAO_RISCO, Paciente
 
 
 class NoFila:
-    def __init__(self, paciente):
+    def __init__(self, paciente, ordem_chegada):
         self.paciente = paciente
+        self.ordem_chegada = ordem_chegada
         self.proximo = None
 
 
@@ -17,6 +18,7 @@ class FilaHashEncadeada:
         self.fator_carga = fator_carga
         self.buckets = [None] * capacidade_inicial
         self.tamanho = 0
+        self._proxima_ordem_chegada = 0
 
     def _indice(self, chave):
         return hash(chave) % self.capacidade
@@ -33,7 +35,8 @@ class FilaHashEncadeada:
                 return False
             atual = atual.proximo
 
-        novo = NoFila(paciente)
+        novo = NoFila(paciente, self._proxima_ordem_chegada)
+        self._proxima_ordem_chegada += 1
         novo.proximo = self.buckets[indice]
         self.buckets[indice] = novo
         self.tamanho += 1
@@ -70,11 +73,11 @@ class FilaHashEncadeada:
             atual = atual.proximo
         return None
 
-    def _chave_prioridade(self, paciente):
+    def _chave_prioridade(self, paciente, ordem_chegada):
         classificacao = CLASSIFICACAO_RISCO.get(
             paciente.classificacao, len(CLASSIFICACAO_RISCO) + 1
         )
-        return (classificacao, paciente.horario)
+        return (classificacao, ordem_chegada)
 
     def proximo(self):
         melhor = None
@@ -83,10 +86,14 @@ class FilaHashEncadeada:
             atual = inicio
             while atual is not None:
                 paciente = atual.paciente
-                if melhor is None or self._chave_prioridade(paciente) < self._chave_prioridade(melhor):
-                    melhor = paciente
+                if melhor is None or self._chave_prioridade(
+                    paciente, atual.ordem_chegada
+                ) < self._chave_prioridade(
+                    melhor.paciente, melhor.ordem_chegada
+                ):
+                    melhor = atual
                 atual = atual.proximo
-        return melhor
+        return melhor.paciente if melhor is not None else None
 
     def atender_proximo(self):
         paciente = self.proximo()
@@ -97,9 +104,12 @@ class FilaHashEncadeada:
         for inicio in self.buckets:
             atual = inicio
             while atual is not None:
-                pacientes.append(atual.paciente)
+                pacientes.append((atual.paciente, atual.ordem_chegada))
                 atual = atual.proximo
-        return sorted(pacientes, key=self._chave_prioridade)
+        pacientes.sort(
+            key=lambda item: self._chave_prioridade(item[0], item[1])
+        )
+        return [paciente for paciente, _ in pacientes]
 
     def _redimensionar(self, nova_capacidade):
         buckets_antigos = self.buckets
