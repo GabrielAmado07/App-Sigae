@@ -11,10 +11,27 @@ proximo_id = 1
 
 @app.route("/")
 def index():
+    id_busca = request.args.get("id", "").strip()
+    paciente_encontrado = None
+    mensagem_busca = None
+
+    if id_busca:
+        try:
+            id_paciente = int(id_busca)
+        except ValueError:
+            mensagem_busca = "Digite um ID numérico válido."
+        else:
+            paciente_encontrado = fila.buscar(id_paciente)
+            if paciente_encontrado is None:
+                mensagem_busca = f"Nenhum paciente encontrado com o ID {id_paciente}."
+
     return render_template(
         "index.html",
         pacientes=fila.listar(),
         capacidade=fila.capacidade,
+        id_busca=id_busca,
+        paciente_encontrado=paciente_encontrado,
+        mensagem_busca=mensagem_busca,
     )
 
 

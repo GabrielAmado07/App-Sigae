@@ -60,6 +60,26 @@
                     </div>
 
                     <div class="panel-body">
+                        <form method="GET" action="{{ url_for('index') }}" class="search-form">
+                            <div class="form-group">
+                                <label for="id">Buscar paciente por ID:</label>
+                                <input type="number" id="id" name="id" min="1" step="1"
+                                    value="{{ id_busca }}" placeholder="Digite o ID" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Buscar</button>
+                        </form>
+
+                        {% if paciente_encontrado %}
+                        <p class="search-message" role="status">
+                            Encontrado: <strong>{{ paciente_encontrado.nome }}</strong>
+                            (ID: {{ paciente_encontrado.id }}) —
+                            {{ paciente_encontrado.classificacao.replace('_', ' ') }},
+                            {{ paciente_encontrado.horario.strftime('%d/%m/%Y %H:%M') }}.
+                        </p>
+                        {% elif mensagem_busca %}
+                        <p class="search-message search-error" role="alert">{{ mensagem_busca }}</p>
+                        {% endif %}
+
                         <p class="hash-info">Capacidade da tabela hash: <strong>{{ capacidade }}</strong></p>
 
                         {% if pacientes %}
