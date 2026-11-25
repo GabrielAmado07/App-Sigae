@@ -77,6 +77,9 @@
                                     Chamado: {{ atendimento.chamado_em.strftime('%H:%M') }}
                                 </div>
                                 <div class="patient-time">Médico: {{ atendimento.medico.nome }}</div>
+                                {% if atendimento.medico.urgencia != atendimento.paciente.classificacao %}
+                                <div class="patient-time">Médico substituto: não há médico cadastrado para essa urgência.</div>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -121,11 +124,16 @@
                                 Médico selecionado: {{ medico_selecionado.nome }} —
                                 {{ medico_selecionado.atendimentos_por_dia.get(data_hoje, 0) }}
                                 atendimento(s) concluído(s) hoje.
+                                {% if medico_selecionado.urgencia != proximo_paciente.classificacao %}
+                                Substituto: não há médico cadastrado para essa urgência.
+                                {% endif %}
                             </div>
-                            {% elif not medicos_da_urgencia %}
-                            <div class="patient-time">Não há médicos cadastrados para essa urgência.</div>
-                            {% else %}
+                            {% elif medicos_da_urgencia %}
                             <div class="patient-time">Todos os médicos desta urgência estão em atendimento.</div>
+                            {% elif medicos_cadastrados %}
+                            <div class="patient-time">Todos os médicos estão em atendimento.</div>
+                            {% else %}
+                            <div class="patient-time">Não há médicos cadastrados para atender.</div>
                             {% endif %}
                             {% elif medicos_disponiveis %}
                             <strong>Médicos disponíveis:</strong>

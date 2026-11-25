@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from heapq import heapify, heappop
 from threading import Lock
 
 from flask import Flask, abort, redirect, render_template, request, url_for
@@ -24,38 +25,53 @@ NOMES_URGENCIA = {
 }
 
 
-def obter_medicos_disponiveis(urgencia=None):
+def obter_medicos_disponiveis():
     ids_medicos_ocupados = {
         atendimento["medico"]["id"] for atendimento in atendimentos_atuais
     }
     return [
         medico for medico in medicos
         if medico["id"] not in ids_medicos_ocupados
-        and (urgencia is None or medico["urgencia"] == urgencia)
     ]
+
+
+def obter_medicos_para_atendimento(paciente, medicos_disponiveis):
+    if paciente is None:
+        return []
+    especialistas_cadastrados = any(
+        medico["urgencia"] == paciente.classificacao for medico in medicos
+    )
+    if especialistas_cadastrados:
+        return [
+            medico for medico in medicos_disponiveis
+            if medico["urgencia"] == paciente.classificacao
+        ]
+    return medicos_disponiveis
 
 
 def selecionar_medico(paciente, medicos_disponiveis=None):
     if paciente is None:
         return None
-
-    candidatos = (
-        obter_medicos_disponiveis(paciente.classificacao)
-        if medicos_disponiveis is None
-        else medicos_disponiveis
-    )
+    candidatos = medicos_disponiveis
+    if candidatos is None:
+        candidatos = obter_medicos_para_atendimento(
+            paciente, obter_medicos_disponiveis()
+        )
     if not candidatos:
         return None
 
     hoje = date.today().isoformat()
-    return min(
-        candidatos,
-        key=lambda medico: (
+    heap = [
+        (
             medico["atendimentos_por_dia"].get(hoje, 0),
             medico["ordem_cadastro"],
             medico["id"],
-        ),
-    )
+            medico,
+        )
+        for medico in candidatos
+    ]
+    heapify(heap)
+    return heappop(heap)[3]
 
 
 @app.route("/")
@@ -102,7 +118,12 @@ def index():
         medico for medico in medicos
         if urgencia_proximo is not None and medico["urgencia"] == urgencia_proximo
     ]
-    medicos_disponiveis = obter_medicos_disponiveis(urgencia_proximo)
+    medicos_livres = obter_medicos_disponiveis()
+    medicos_disponiveis = (
+        obter_medicos_para_atendimento(proximo_paciente, medicos_livres)
+        if proximo_paciente is not None
+        else medicos_livres
+    )
     medico_selecionado = selecionar_medico(proximo_paciente, medicos_disponiveis)
 
     return render_template(
@@ -114,6 +135,7 @@ def index():
         proximo_paciente=proximo_paciente,
         medicos_da_urgencia=medicos_da_urgencia,
         medicos_disponiveis=medicos_disponiveis,
+        medicos_cadastrados=bool(medicos),
         medico_selecionado=medico_selecionado,
         nomes_urgencia=NOMES_URGENCIA,
         data_hoje=date.today().isoformat(),
@@ -192,18 +214,19 @@ def atender():
             medico for medico in medicos
             if medico["urgencia"] == paciente.classificacao
         ]
-        if not medicos_da_urgencia:
-            abort(
-                409,
-                description=(
-                    "Não há médico cadastrado para a urgência "
-                    f"{paciente.classificacao.replace('_', ' ').lower()}."
-                ),
-            )
-
-        medico = selecionar_medico(paciente)
+        medicos_para_chamada = obter_medicos_para_atendimento(
+            paciente, obter_medicos_disponiveis()
+        )
+        medico = selecionar_medico(paciente, medicos_para_chamada)
         if medico is None:
-            abort(409, description="Todos os médicos desta urgência estão em atendimento.")
+            if medicos_da_urgencia:
+                abort(
+                    409,
+                    description="Todos os médicos desta urgência estão em atendimento.",
+                )
+            if medicos:
+                abort(409, description="Todos os médicos estão em atendimento.")
+            abort(409, description="Cadastre um médico para chamar pacientes.")
 
         if fila.remover(paciente.id) is None:
             abort(409, description="O paciente não está mais na fila.")
