@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import date, datetime
+from threading import Lock
 
 from flask import Flask, abort, redirect, render_template, request, url_for
 
@@ -13,16 +14,48 @@ pacientes_atendidos = []
 atendimentos_atuais = []
 medicos = []
 proximo_id_medico = 1
+estado_lock = Lock()
+NOMES_URGENCIA = {
+    "EMERGENCIA": "Emergência",
+    "MUITO_URGENTE": "Muito Urgente",
+    "URGENTE": "Urgente",
+    "POUCO_URGENTE": "Pouco Urgente",
+    "NAO_URGENTE": "Não Urgente",
+}
 
 
-def obter_medicos_disponiveis():
+def obter_medicos_disponiveis(urgencia=None):
     ids_medicos_ocupados = {
         atendimento["medico"]["id"] for atendimento in atendimentos_atuais
     }
     return [
         medico for medico in medicos
         if medico["id"] not in ids_medicos_ocupados
+        and (urgencia is None or medico["urgencia"] == urgencia)
     ]
+
+
+def selecionar_medico(paciente, medicos_disponiveis=None):
+    if paciente is None:
+        return None
+
+    candidatos = (
+        obter_medicos_disponiveis(paciente.classificacao)
+        if medicos_disponiveis is None
+        else medicos_disponiveis
+    )
+    if not candidatos:
+        return None
+
+    hoje = date.today().isoformat()
+    return min(
+        candidatos,
+        key=lambda medico: (
+            medico["atendimentos_por_dia"].get(hoje, 0),
+            medico["ordem_cadastro"],
+            medico["id"],
+        ),
+    )
 
 
 @app.route("/")
@@ -61,13 +94,29 @@ def index():
         if not candidatos_remocao:
             mensagem_remocao = f"Nenhum paciente encontrado para remoção: {termo_remocao}."
 
+    proximo_paciente = fila.proximo()
+    urgencia_proximo = (
+        proximo_paciente.classificacao if proximo_paciente is not None else None
+    )
+    medicos_da_urgencia = [
+        medico for medico in medicos
+        if urgencia_proximo is not None and medico["urgencia"] == urgencia_proximo
+    ]
+    medicos_disponiveis = obter_medicos_disponiveis(urgencia_proximo)
+    medico_selecionado = selecionar_medico(proximo_paciente, medicos_disponiveis)
+
     return render_template(
         "index.html",
         pacientes=fila.listar(),
         capacidade=fila.capacidade,
         pacientes_atendidos=pacientes_atendidos,
         atendimentos_atuais=atendimentos_atuais,
-        medicos_disponiveis=obter_medicos_disponiveis(),
+        proximo_paciente=proximo_paciente,
+        medicos_da_urgencia=medicos_da_urgencia,
+        medicos_disponiveis=medicos_disponiveis,
+        medico_selecionado=medico_selecionado,
+        nomes_urgencia=NOMES_URGENCIA,
+        data_hoje=date.today().isoformat(),
         id_busca=id_busca,
         paciente_encontrado=paciente_encontrado,
         mensagem_busca=mensagem_busca,
@@ -107,34 +156,58 @@ def cadastro_medicos():
 
     if request.method == "POST":
         nome = request.form.get("nome", "").strip()
+        urgencia = request.form.get("urgencia", "").strip().upper()
 
-        if not nome:
-            abort(400, description="O nome do médico é obrigatório.")
+        if not nome or urgencia not in CLASSIFICACAO_RISCO:
+            abort(400, description="Informe o nome e um tipo de urgência válido.")
 
-        medicos.append({
-            "id": proximo_id_medico,
-            "nome": nome,
-            "atendimentos_concluidos": 0,
-        })
-        proximo_id_medico += 1
+        with estado_lock:
+            medicos.append({
+                "id": proximo_id_medico,
+                "nome": nome,
+                "urgencia": urgencia,
+                "ordem_cadastro": proximo_id_medico,
+                "atendimentos_concluidos": 0,
+                "atendimentos_por_dia": {},
+            })
+            proximo_id_medico += 1
         return redirect(url_for("cadastro_medicos"))
 
-    return render_template("medicos.html", medicos=medicos)
+    return render_template(
+        "medicos.html",
+        medicos=medicos,
+        data_hoje=date.today().isoformat(),
+        nomes_urgencia=NOMES_URGENCIA,
+    )
 
 
 @app.route("/atender", methods=["POST"])
 def atender():
-    if not medicos:
-        abort(409, description="Cadastre um médico antes de chamar um paciente.")
+    with estado_lock:
+        paciente = fila.proximo()
+        if paciente is None:
+            return redirect(url_for("index"))
 
-    medicos_livres = obter_medicos_disponiveis()
-    if not medicos_livres:
-        abort(409, description="Todos os médicos estão em atendimento.")
+        medicos_da_urgencia = [
+            medico for medico in medicos
+            if medico["urgencia"] == paciente.classificacao
+        ]
+        if not medicos_da_urgencia:
+            abort(
+                409,
+                description=(
+                    "Não há médico cadastrado para a urgência "
+                    f"{paciente.classificacao.replace('_', ' ').lower()}."
+                ),
+            )
 
-    medico = medicos_livres[0]
+        medico = selecionar_medico(paciente)
+        if medico is None:
+            abort(409, description="Todos os médicos desta urgência estão em atendimento.")
 
-    paciente = fila.atender_proximo()
-    if paciente is not None:
+        if fila.remover(paciente.id) is None:
+            abort(409, description="O paciente não está mais na fila.")
+
         paciente.status = "EM_ATENDIMENTO"
         atendimentos_atuais.append({
             "paciente": paciente,
@@ -151,26 +224,31 @@ def finalizar_atendimento():
     except ValueError:
         abort(400, description="Não foi possível identificar o médico.")
 
-    atendimento = next(
-        (
-            item for item in atendimentos_atuais
-            if item["medico"]["id"] == id_medico
-        ),
-        None,
-    )
-    if atendimento is None:
-        abort(404, description="Não há paciente em atendimento.")
+    with estado_lock:
+        atendimento = next(
+            (
+                item for item in atendimentos_atuais
+                if item["medico"]["id"] == id_medico
+            ),
+            None,
+        )
+        if atendimento is None:
+            abort(404, description="Não há paciente em atendimento.")
 
-    paciente = atendimento["paciente"]
-    medico = atendimento["medico"]
-    paciente.status = "ATENDIDO"
-    medico["atendimentos_concluidos"] += 1
-    pacientes_atendidos.append({
-        "paciente": paciente,
-        "medico": medico,
-        "atendido_em": datetime.now(),
-    })
-    atendimentos_atuais.remove(atendimento)
+        paciente = atendimento["paciente"]
+        medico = atendimento["medico"]
+        paciente.status = "ATENDIDO"
+        medico["atendimentos_concluidos"] += 1
+        hoje = date.today().isoformat()
+        medico["atendimentos_por_dia"][hoje] = (
+            medico["atendimentos_por_dia"].get(hoje, 0) + 1
+        )
+        pacientes_atendidos.append({
+            "paciente": paciente,
+            "medico": medico,
+            "atendido_em": datetime.now(),
+        })
+        atendimentos_atuais.remove(atendimento)
     return redirect(url_for("index"))
 
 

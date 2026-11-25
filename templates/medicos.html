@@ -32,7 +32,7 @@
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Cadastro de médicos</h1>
-                    <p class="page-subtitle">Informe o nome do médico.</p>
+                    <p class="page-subtitle">Informe o nome e o tipo de urgência atendida pelo médico.</p>
                 </div>
             </div>
 
@@ -45,6 +45,16 @@
                                 <label for="nome">Nome:</label>
                                 <input type="text" id="nome" name="nome" autocomplete="name"
                                     minlength="2" maxlength="100" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="urgencia">Tipo de urgência atendida:</label>
+                                <select id="urgencia" name="urgencia" required>
+                                    <option value="">Selecione a urgência</option>
+                                    {% for codigo, nome in nomes_urgencia.items() %}
+                                    <option value="{{ codigo }}">{{ nome }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Cadastrar médico</button>
@@ -65,7 +75,13 @@
                                         <div class="patient-name">{{ medico.nome }}</div>
                                         <div class="patient-time">ID: {{ medico.id }}</div>
                                         <div class="patient-time">
-                                            Atendimentos concluídos: {{ medico.atendimentos_concluidos }}
+                                            Urgência: {{ nomes_urgencia[medico.urgencia] }}
+                                        </div>
+                                        <div class="patient-time">
+                                            Atendimentos hoje:
+                                            {{ medico.atendimentos_por_dia.get(data_hoje, 0) }}
+                                            · Total:
+                                            {{ medico.atendimentos_concluidos }}
                                         </div>
                                     </div>
                                 </div>

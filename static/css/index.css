@@ -1145,16 +1145,6 @@ body {
   border: 1px solid #86efac;
 }
 
-.call-form select {
-  min-height: 38px;
-  max-width: 220px;
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 7px;
-  background: #ffffff;
-  color: #334155;
-}
-
 .panel-body {
   background: #ffffff;
 }
@@ -1184,11 +1174,6 @@ body {
   .call-form {
     flex-wrap: wrap;
     width: 100%;
-  }
-
-  .call-form select {
-    flex: 1;
-    min-width: 0;
   }
 
   .panel + .panel {

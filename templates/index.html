@@ -112,17 +112,30 @@
 
                     <div class="panel-body">
                         <div class="available-doctors" aria-live="polite">
+                            {% if proximo_paciente %}
+                            <strong>Próximo paciente:</strong>
+                            {{ proximo_paciente.nome }} ·
+                            {{ nomes_urgencia[proximo_paciente.classificacao] }}
+                            {% if medico_selecionado %}
+                            <div class="patient-time">
+                                Médico selecionado: {{ medico_selecionado.nome }} —
+                                {{ medico_selecionado.atendimentos_por_dia.get(data_hoje, 0) }}
+                                atendimento(s) concluído(s) hoje.
+                            </div>
+                            {% elif not medicos_da_urgencia %}
+                            <div class="patient-time">Não há médicos cadastrados para essa urgência.</div>
+                            {% else %}
+                            <div class="patient-time">Todos os médicos desta urgência estão em atendimento.</div>
+                            {% endif %}
+                            {% elif medicos_disponiveis %}
                             <strong>Médicos disponíveis:</strong>
-                            {% if medicos_disponiveis %}
                             <div class="available-doctor-list">
                                 {% for medico in medicos_disponiveis %}
                                 <span class="badge badge-medico-disponivel">{{ medico.nome }}</span>
                                 {% endfor %}
                             </div>
-                            {% elif atendimentos_atuais %}
-                            <span class="patient-time">Todos os médicos estão em atendimento.</span>
                             {% else %}
-                            <span class="patient-time">Cadastre um médico para iniciar os atendimentos.</span>
+                            <span class="patient-time">Cadastre médicos para iniciar os atendimentos.</span>
                             {% endif %}
                         </div>
 
