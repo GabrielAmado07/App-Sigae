@@ -26,6 +26,7 @@
             <ul class="nav-list">
                 <li class="nav-item active"><a href="{{ url_for('index') }}">Triagem e Fila</a></li>
                 <li class="nav-item"><a href="{{ url_for('cadastro') }}">Cadastrar paciente</a></li>
+                <li class="nav-item"><a href="{{ url_for('cadastro_medicos') }}">Cadastrar médico</a></li>
             </ul>
         </aside>
 
@@ -74,6 +75,7 @@
                                     Chegada: {{ atendimento_atual.paciente.horario.strftime('%H:%M') }} ·
                                     Chamado: {{ atendimento_atual.chamado_em.strftime('%H:%M') }}
                                 </div>
+                                <div class="patient-time">Médico: {{ atendimento_atual.medico.nome }}</div>
                             </div>
                         </div>
 
@@ -97,9 +99,19 @@
                 <section class="panel" id="fila">
                     <div class="panel-header">
                         <span>Fila de atendimento</span>
-                        <form method="POST" action="{{ url_for('atender') }}">
+                        <form method="POST" action="{{ url_for('atender') }}" class="call-form">
+                            {% if medicos %}
+                            <select name="medico_id" aria-label="Médico responsável pelo atendimento" required>
+                                <option value="">Selecione o médico</option>
+                                {% for medico in medicos %}
+                                <option value="{{ medico.id }}">{{ medico.nome }} ({{ medico.id }})</option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <span class="patient-time">Cadastre um médico para chamar pacientes.</span>
+                            {% endif %}
                             <button type="submit" class="btn btn-success"
-                                {% if atendimento_atual or not pacientes %}disabled{% endif %}>
+                                {% if atendimento_atual or not pacientes or not medicos %}disabled{% endif %}>
                                 Chamar próximo
                             </button>
                         </form>
@@ -234,6 +246,7 @@
                                             Chegada: {{ atendimento.paciente.horario.strftime('%H:%M') }} ·
                                             Atendimento: {{ atendimento.atendido_em.strftime('%H:%M') }}
                                         </div>
+                                        <div class="patient-time">Médico: {{ atendimento.medico.nome }}</div>
                                     </div>
                                 </div>
 

@@ -11,6 +11,8 @@ fila = FilaHashEncadeada()
 proximo_id = 1
 pacientes_atendidos = []
 atendimento_atual = None
+medicos = []
+proximo_id_medico = 1
 
 
 @app.route("/")
@@ -55,6 +57,7 @@ def index():
         capacidade=fila.capacidade,
         pacientes_atendidos=pacientes_atendidos,
         atendimento_atual=atendimento_atual,
+        medicos=medicos,
         id_busca=id_busca,
         paciente_encontrado=paciente_encontrado,
         mensagem_busca=mensagem_busca,
@@ -88,6 +91,27 @@ def cadastro():
     return render_template("cadastro.html")
 
 
+@app.route("/medicos", methods=["GET", "POST"])
+def cadastro_medicos():
+    global proximo_id_medico
+
+    if request.method == "POST":
+        nome = request.form.get("nome", "").strip()
+
+        if not nome:
+            abort(400, description="O nome do médico é obrigatório.")
+
+        medicos.append({
+            "id": proximo_id_medico,
+            "nome": nome,
+            "atendimentos_concluidos": 0,
+        })
+        proximo_id_medico += 1
+        return redirect(url_for("cadastro_medicos"))
+
+    return render_template("medicos.html", medicos=medicos)
+
+
 @app.route("/atender", methods=["POST"])
 def atender():
     global atendimento_atual
@@ -95,11 +119,24 @@ def atender():
     if atendimento_atual is not None:
         abort(409, description="Finalize o atendimento atual antes de chamar outro paciente.")
 
+    if not medicos:
+        abort(409, description="Cadastre um médico antes de chamar um paciente.")
+
+    try:
+        id_medico = int(request.form.get("medico_id", ""))
+    except ValueError:
+        abort(400, description="Selecione um médico cadastrado.")
+
+    medico = next((item for item in medicos if item["id"] == id_medico), None)
+    if medico is None:
+        abort(400, description="O médico selecionado não está cadastrado.")
+
     paciente = fila.atender_proximo()
     if paciente is not None:
         paciente.status = "EM_ATENDIMENTO"
         atendimento_atual = {
             "paciente": paciente,
+            "medico": medico,
             "chamado_em": datetime.now(),
         }
     return redirect(url_for("index"))
@@ -113,9 +150,12 @@ def finalizar_atendimento():
         abort(404, description="Não há paciente em atendimento.")
 
     paciente = atendimento_atual["paciente"]
+    medico = atendimento_atual["medico"]
     paciente.status = "ATENDIDO"
+    medico["atendimentos_concluidos"] += 1
     pacientes_atendidos.append({
         "paciente": paciente,
+        "medico": medico,
         "atendido_em": datetime.now(),
     })
     atendimento_atual = None

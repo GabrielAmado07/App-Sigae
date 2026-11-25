@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Médicos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-brand">Sistema Hospitalar — Triagem</div>
+        <div class="topbar-actions">
+            <span>Recepção / Triagem</span>
+        </div>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-circle">+</div>
+            </div>
+            <ul class="nav-list">
+                <li class="nav-item"><a href="{{ url_for('index') }}">Triagem e Fila</a></li>
+                <li class="nav-item"><a href="{{ url_for('cadastro') }}">Cadastrar paciente</a></li>
+                <li class="nav-item active"><a href="{{ url_for('cadastro_medicos') }}">Cadastrar médico</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Cadastro de médicos</h1>
+                    <p class="page-subtitle">Informe o nome do médico.</p>
+                </div>
+            </div>
+
+            <div class="triage-grid registration-grid">
+                <section class="panel" id="cadastro-medico">
+                    <div class="panel-header">Dados do médico</div>
+                    <div class="panel-body">
+                        <form method="POST" action="{{ url_for('cadastro_medicos') }}" class="triage-form">
+                            <div class="form-group">
+                                <label for="nome">Nome:</label>
+                                <input type="text" id="nome" name="nome" autocomplete="name"
+                                    minlength="2" maxlength="100" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Cadastrar médico</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="panel" id="medicos-cadastrados">
+                    <div class="panel-header">Médicos cadastrados</div>
+                    <div class="panel-body">
+                        {% if medicos %}
+                        <ol class="patient-list">
+                            {% for medico in medicos %}
+                            <li class="patient-item">
+                                <div class="patient-details">
+                                    <span class="patient-pos">{{ loop.index }}º</span>
+                                    <div>
+                                        <div class="patient-name">{{ medico.nome }}</div>
+                                        <div class="patient-time">ID: {{ medico.id }}</div>
+                                        <div class="patient-time">
+                                            Atendimentos concluídos: {{ medico.atendimentos_concluidos }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                        {% else %}
+                        <div class="empty-state">Ainda não há médicos cadastrados.</div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
