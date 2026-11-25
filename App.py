@@ -10,9 +10,19 @@ app = Flask(__name__)
 fila = FilaHashEncadeada()
 proximo_id = 1
 pacientes_atendidos = []
-atendimento_atual = None
+atendimentos_atuais = []
 medicos = []
 proximo_id_medico = 1
+
+
+def obter_medicos_disponiveis():
+    ids_medicos_ocupados = {
+        atendimento["medico"]["id"] for atendimento in atendimentos_atuais
+    }
+    return [
+        medico for medico in medicos
+        if medico["id"] not in ids_medicos_ocupados
+    ]
 
 
 @app.route("/")
@@ -56,8 +66,8 @@ def index():
         pacientes=fila.listar(),
         capacidade=fila.capacidade,
         pacientes_atendidos=pacientes_atendidos,
-        atendimento_atual=atendimento_atual,
-        medicos=medicos,
+        atendimentos_atuais=atendimentos_atuais,
+        medicos_disponiveis=obter_medicos_disponiveis(),
         id_busca=id_busca,
         paciente_encontrado=paciente_encontrado,
         mensagem_busca=mensagem_busca,
@@ -114,43 +124,45 @@ def cadastro_medicos():
 
 @app.route("/atender", methods=["POST"])
 def atender():
-    global atendimento_atual
-
-    if atendimento_atual is not None:
-        abort(409, description="Finalize o atendimento atual antes de chamar outro paciente.")
-
     if not medicos:
         abort(409, description="Cadastre um médico antes de chamar um paciente.")
 
-    try:
-        id_medico = int(request.form.get("medico_id", ""))
-    except ValueError:
-        abort(400, description="Selecione um médico cadastrado.")
+    medicos_livres = obter_medicos_disponiveis()
+    if not medicos_livres:
+        abort(409, description="Todos os médicos estão em atendimento.")
 
-    medico = next((item for item in medicos if item["id"] == id_medico), None)
-    if medico is None:
-        abort(400, description="O médico selecionado não está cadastrado.")
+    medico = medicos_livres[0]
 
     paciente = fila.atender_proximo()
     if paciente is not None:
         paciente.status = "EM_ATENDIMENTO"
-        atendimento_atual = {
+        atendimentos_atuais.append({
             "paciente": paciente,
             "medico": medico,
             "chamado_em": datetime.now(),
-        }
+        })
     return redirect(url_for("index"))
 
 
 @app.route("/finalizar", methods=["POST"])
 def finalizar_atendimento():
-    global atendimento_atual
+    try:
+        id_medico = int(request.form.get("medico_id", ""))
+    except ValueError:
+        abort(400, description="Não foi possível identificar o médico.")
 
-    if atendimento_atual is None:
+    atendimento = next(
+        (
+            item for item in atendimentos_atuais
+            if item["medico"]["id"] == id_medico
+        ),
+        None,
+    )
+    if atendimento is None:
         abort(404, description="Não há paciente em atendimento.")
 
-    paciente = atendimento_atual["paciente"]
-    medico = atendimento_atual["medico"]
+    paciente = atendimento["paciente"]
+    medico = atendimento["medico"]
     paciente.status = "ATENDIDO"
     medico["atendimentos_concluidos"] += 1
     pacientes_atendidos.append({
@@ -158,7 +170,7 @@ def finalizar_atendimento():
         "medico": medico,
         "atendido_em": datetime.now(),
     })
-    atendimento_atual = None
+    atendimentos_atuais.remove(atendimento)
     return redirect(url_for("index"))
 
 

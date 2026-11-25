@@ -57,37 +57,40 @@
 
             <section class="panel current-attendance" id="atendimento-atual">
                 <div class="panel-header">
-                    <span>Atendimento Atual</span>
-                    {% if atendimento_atual %}
-                    <span class="badge badge-em-atendimento">Em atendimento</span>
+                    <span>Atendimentos atuais</span>
+                    {% if atendimentos_atuais %}
+                    <span class="badge badge-em-atendimento">{{ atendimentos_atuais|length }} em atendimento</span>
                     {% endif %}
                 </div>
 
                 <div class="panel-body">
-                    {% if atendimento_atual %}
+                    {% if atendimentos_atuais %}
+                    {% for atendimento in atendimentos_atuais %}
                     <div class="current-patient">
                         <div class="patient-details">
                             <span class="patient-pos">!</span>
                             <div>
-                                <div class="patient-name">{{ atendimento_atual.paciente.nome }}</div>
+                                <div class="patient-name">{{ atendimento.paciente.nome }}</div>
                                 <div class="patient-time">
-                                    ID: {{ atendimento_atual.paciente.id }} ·
-                                    Chegada: {{ atendimento_atual.paciente.horario.strftime('%H:%M') }} ·
-                                    Chamado: {{ atendimento_atual.chamado_em.strftime('%H:%M') }}
+                                    ID: {{ atendimento.paciente.id }} ·
+                                    Chegada: {{ atendimento.paciente.horario.strftime('%H:%M') }} ·
+                                    Chamado: {{ atendimento.chamado_em.strftime('%H:%M') }}
                                 </div>
-                                <div class="patient-time">Médico: {{ atendimento_atual.medico.nome }}</div>
+                                <div class="patient-time">Médico: {{ atendimento.medico.nome }}</div>
                             </div>
                         </div>
 
                         <div class="patient-actions">
-                            <span class="badge badge-{{ atendimento_atual.paciente.classificacao|lower|replace('_', '-') }}">
-                                {{ atendimento_atual.paciente.classificacao.replace('_', ' ') }}
+                            <span class="badge badge-{{ atendimento.paciente.classificacao|lower|replace('_', '-') }}">
+                                {{ atendimento.paciente.classificacao.replace('_', ' ') }}
                             </span>
                             <form method="POST" action="{{ url_for('finalizar_atendimento') }}">
+                                <input type="hidden" name="medico_id" value="{{ atendimento.medico.id }}">
                                 <button type="submit" class="btn btn-success">Finalizar Atendimento</button>
                             </form>
                         </div>
                     </div>
+                    {% endfor %}
                     {% else %}
                     <div class="empty-state">Nenhum paciente em atendimento.</div>
                     {% endif %}
@@ -100,24 +103,29 @@
                     <div class="panel-header">
                         <span>Fila de atendimento</span>
                         <form method="POST" action="{{ url_for('atender') }}" class="call-form">
-                            {% if medicos %}
-                            <select name="medico_id" aria-label="Médico responsável pelo atendimento" required>
-                                <option value="">Selecione o médico</option>
-                                {% for medico in medicos %}
-                                <option value="{{ medico.id }}">{{ medico.nome }} ({{ medico.id }})</option>
-                                {% endfor %}
-                            </select>
-                            {% else %}
-                            <span class="patient-time">Cadastre um médico para chamar pacientes.</span>
-                            {% endif %}
                             <button type="submit" class="btn btn-success"
-                                {% if atendimento_atual or not pacientes or not medicos %}disabled{% endif %}>
+                                {% if not pacientes or not medicos_disponiveis %}disabled{% endif %}>
                                 Chamar próximo
                             </button>
                         </form>
                     </div>
 
                     <div class="panel-body">
+                        <div class="available-doctors" aria-live="polite">
+                            <strong>Médicos disponíveis:</strong>
+                            {% if medicos_disponiveis %}
+                            <div class="available-doctor-list">
+                                {% for medico in medicos_disponiveis %}
+                                <span class="badge badge-medico-disponivel">{{ medico.nome }}</span>
+                                {% endfor %}
+                            </div>
+                            {% elif atendimentos_atuais %}
+                            <span class="patient-time">Todos os médicos estão em atendimento.</span>
+                            {% else %}
+                            <span class="patient-time">Cadastre um médico para iniciar os atendimentos.</span>
+                            {% endif %}
+                        </div>
+
                         <form method="GET" action="{{ url_for('index') }}" class="search-form">
                             <div class="form-group">
                                 <label for="id">Buscar paciente por ID:</label>
