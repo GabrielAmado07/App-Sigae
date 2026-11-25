@@ -1,6 +1,7 @@
 from heapq import heappop, heappush
 
 from models.paciente import CLASSIFICACAO_RISCO, Paciente
+from models.Arvore_Rubro_negra import ArvoreRubroNegra
 
 
 class NoFila:
@@ -11,7 +12,7 @@ class NoFila:
 
 
 class FilaHashEncadeada:
-    """Tabela hash dinâmica que resolve colisões por encadeamento."""
+    """Fila com indice hash e indice rubro-negro cronologico."""
 
     def __init__(self, capacidade_inicial=8, fator_carga=0.75):
         if capacidade_inicial < 1:
@@ -24,6 +25,7 @@ class FilaHashEncadeada:
         self._proxima_versao = 0
         self._versoes = {}
         self._heap = []
+        self.arvore_chegada = ArvoreRubroNegra()
 
     def _indice(self, chave):
         return hash(chave) % self.capacidade
@@ -34,7 +36,17 @@ class FilaHashEncadeada:
 
         existente = self._buscar_no(paciente.id)
         if existente is not None:
+            chave_antiga = (
+                existente.paciente.horario,
+                existente.paciente.id,
+            )
+            if chave_antiga != (paciente.horario, paciente.id):
+                self.arvore_chegada.remover(chave_antiga)
             existente.paciente = paciente
+            self.arvore_chegada.inserir(
+                (paciente.horario, paciente.id),
+                paciente,
+            )
             self._registrar_prioridade(paciente, existente.ordem_chegada)
             return False
 
@@ -45,6 +57,10 @@ class FilaHashEncadeada:
         novo.proximo = self.buckets[indice]
         self.buckets[indice] = novo
         self.tamanho += 1
+        self.arvore_chegada.inserir(
+            (paciente.horario, paciente.id),
+            paciente,
+        )
         self._registrar_prioridade(paciente, ordem)
 
         if self.tamanho / self.capacidade >= self.fator_carga:
@@ -78,6 +94,9 @@ class FilaHashEncadeada:
                 else:
                     anterior.proximo = atual.proximo
                 self.tamanho -= 1
+                self.arvore_chegada.remover(
+                    (atual.paciente.horario, atual.paciente.id)
+                )
                 self._versoes.pop(id_paciente, None)
                 return atual.paciente
             anterior = atual
@@ -129,6 +148,9 @@ class FilaHashEncadeada:
             key=lambda item: self._chave_prioridade(item[0], item[1])
         )
         return [paciente for paciente, _ in pacientes]
+
+    def listar_cronologico(self):
+        return self.arvore_chegada.percurso_em_ordem()
 
     def _redimensionar(self, nova_capacidade):
         buckets_antigos = self.buckets

@@ -1,7 +1,10 @@
 import unittest
+from datetime import datetime
 
 import App
 from models.fila_prioridade import FilaHashEncadeada
+from models.Arvore_Rubro_negra import ArvoreRubroNegra
+from models.paciente import Paciente
 
 
 class DoctorAvailabilityTests(unittest.TestCase):
@@ -113,6 +116,50 @@ class DoctorAvailabilityTests(unittest.TestCase):
             self.client.post("/finalizar", data={"medico_id": "1"}).status_code,
             302,
         )
+
+
+class RedBlackTreeTests(unittest.TestCase):
+    def test_insert_search_remove_and_validate(self):
+        arvore = ArvoreRubroNegra()
+        chaves = [(datetime(2026, 1, 1, 10, minuto), minuto) for minuto in range(1, 13)]
+
+        for chave in reversed(chaves):
+            arvore.inserir(chave)
+
+        self.assertTrue(arvore.validar())
+        self.assertEqual(arvore.percurso_em_ordem(), chaves)
+        self.assertEqual(arvore.buscar(chaves[5]), chaves[5])
+
+        for chave in chaves:
+            self.assertEqual(arvore.remover(chave), chave)
+            self.assertTrue(arvore.validar())
+
+        self.assertEqual(arvore.tamanho, 0)
+        self.assertEqual(arvore.remover(chaves[0]), None)
+
+    def test_queue_keeps_chronological_rb_index(self):
+        fila = FilaHashEncadeada()
+        pacientes = [
+            Paciente("Terceiro", "12:00", 3, "URGENTE"),
+            Paciente("Primeiro", "10:00", 1, "NAO_URGENTE"),
+            Paciente("Segundo", "11:00", 2, "EMERGENCIA"),
+        ]
+
+        for paciente in pacientes:
+            fila.adicionar(paciente)
+
+        self.assertEqual(
+            [paciente.id for paciente in fila.listar_cronologico()],
+            [1, 2, 3],
+        )
+        self.assertTrue(fila.arvore_chegada.validar())
+
+        fila.remover(2)
+        self.assertEqual(
+            [paciente.id for paciente in fila.listar_cronologico()],
+            [1, 3],
+        )
+        self.assertTrue(fila.arvore_chegada.validar())
 
 
 if __name__ == "__main__":
