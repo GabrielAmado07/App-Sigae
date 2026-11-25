@@ -229,6 +229,10 @@ body {
   margin-bottom: 18px;
 }
 
+.available-doctors-panel {
+  margin-bottom: 18px;
+}
+
 .current-patient {
   display: flex;
   align-items: center;
@@ -1143,6 +1147,35 @@ body {
   background: #dcfce7;
   color: #166534;
   border: 1px solid #86efac;
+}
+
+.badge-medico-indisponivel {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.badge-medico-em-atendimento {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+
+.doctor-management-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.doctor-management-actions form {
+  margin: 0;
+}
+
+.doctor-management-actions .btn {
+  margin-top: 0;
+  white-space: nowrap;
 }
 
 .panel-body {

@@ -100,6 +100,26 @@
                 </div>
             </section>
 
+            <section class="panel available-doctors-panel" id="medicos-disponiveis">
+                <div class="panel-header">
+                    <span>Médicos disponíveis na triagem</span>
+                    <span class="badge badge-medico-disponivel">{{ medicos_livres|length }} disponível(is)</span>
+                </div>
+                <div class="panel-body">
+                    {% if medicos_livres %}
+                    <div class="available-doctor-list">
+                        {% for medico in medicos_livres %}
+                        <span class="badge badge-medico-disponivel">
+                            {{ medico.nome }} (ID {{ medico.id }}) · {{ nomes_urgencia[medico.urgencia] }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">Nenhum médico disponível no momento.</div>
+                    {% endif %}
+                </div>
+            </section>
+
             <div class="triage-grid">
                 <div class="queue-column">
                 <section class="panel" id="fila">
@@ -128,17 +148,25 @@
                                 Substituto: não há médico cadastrado para essa urgência.
                                 {% endif %}
                             </div>
+                            <strong>Médicos disponíveis para esta urgência:</strong>
+                            <div class="available-doctor-list">
+                                {% for medico in medicos_disponiveis %}
+                                <span class="badge badge-medico-disponivel">
+                                    {{ medico.nome }} (ID {{ medico.id }})
+                                </span>
+                                {% endfor %}
+                            </div>
                             {% elif medicos_da_urgencia %}
-                            <div class="patient-time">Todos os médicos desta urgência estão em atendimento.</div>
+                            <div class="patient-time">Não há médico disponível para essa urgência.</div>
                             {% elif medicos_cadastrados %}
-                            <div class="patient-time">Todos os médicos estão em atendimento.</div>
+                            <div class="patient-time">Não há médicos disponíveis para este paciente.</div>
                             {% else %}
                             <div class="patient-time">Não há médicos cadastrados para atender.</div>
                             {% endif %}
-                            {% elif medicos_disponiveis %}
+                            {% elif medicos_livres %}
                             <strong>Médicos disponíveis:</strong>
                             <div class="available-doctor-list">
-                                {% for medico in medicos_disponiveis %}
+                                {% for medico in medicos_livres %}
                                 <span class="badge badge-medico-disponivel">{{ medico.nome }}</span>
                                 {% endfor %}
                             </div>

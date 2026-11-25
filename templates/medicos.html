@@ -65,9 +65,25 @@
                 <section class="panel" id="medicos-cadastrados">
                     <div class="panel-header">Médicos cadastrados</div>
                     <div class="panel-body">
-                        {% if medicos %}
+                        <form method="GET" action="{{ url_for('cadastro_medicos') }}" class="search-form">
+                            <div class="form-group">
+                                <label for="buscar_medico">Selecionar por nome ou ID:</label>
+                                <input type="text" id="buscar_medico" name="buscar_medico"
+                                    value="{{ busca_medico }}" placeholder="Digite o nome ou ID"
+                                    autocomplete="off">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Buscar médico</button>
+                        </form>
+
+                        {% if busca_medico and not medicos_exibidos %}
+                        <p class="search-message search-error" role="alert">
+                            Nenhum médico encontrado para "{{ busca_medico }}".
+                        </p>
+                        {% endif %}
+
+                        {% if medicos_exibidos %}
                         <ol class="patient-list">
-                            {% for medico in medicos %}
+                            {% for medico in medicos_exibidos %}
                             <li class="patient-item">
                                 <div class="patient-details">
                                     <span class="patient-pos">{{ loop.index }}º</span>
@@ -77,6 +93,18 @@
                                         <div class="patient-time">
                                             Urgência: {{ nomes_urgencia[medico.urgencia] }}
                                         </div>
+                                        <div class="patient-actions">
+                                            {% if medico.id in ids_medicos_em_atendimento %}
+                                            <span class="badge badge-medico-em-atendimento">Em atendimento</span>
+                                            {% if not medico.disponivel %}
+                                            <span class="badge badge-medico-indisponivel">Indisponível após atendimento</span>
+                                            {% endif %}
+                                            {% elif medico.disponivel %}
+                                            <span class="badge badge-medico-disponivel">Disponível</span>
+                                            {% else %}
+                                            <span class="badge badge-medico-indisponivel">Indisponível</span>
+                                            {% endif %}
+                                        </div>
                                         <div class="patient-time">
                                             Atendimentos hoje:
                                             {{ medico.atendimentos_por_dia.get(data_hoje, 0) }}
@@ -85,11 +113,32 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="doctor-management-actions">
+                                    <form method="POST"
+                                        action="{{ url_for('alterar_disponibilidade_medico', id_medico=medico.id) }}">
+                                        <input type="hidden" name="buscar_medico" value="{{ busca_medico }}">
+                                        <input type="hidden" name="disponivel"
+                                            value="{{ 0 if medico.disponivel else 1 }}">
+                                        <button type="submit" class="btn btn-primary btn-doctor-action">
+                                            {{ "Marcar indisponível" if medico.disponivel else "Marcar disponível" }}
+                                        </button>
+                                    </form>
+                                    <form method="POST"
+                                        action="{{ url_for('remover_medico', id_medico=medico.id) }}">
+                                        <input type="hidden" name="buscar_medico" value="{{ busca_medico }}">
+                                        <button type="submit" class="btn btn-danger btn-doctor-action"
+                                            {% if medico.id in ids_medicos_em_atendimento %}disabled{% endif %}>
+                                            Remover
+                                        </button>
+                                    </form>
+                                </div>
                             </li>
                             {% endfor %}
                         </ol>
                         {% else %}
+                        {% if not busca_medico %}
                         <div class="empty-state">Ainda não há médicos cadastrados.</div>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </section>

@@ -31,7 +31,8 @@ def obter_medicos_disponiveis():
     }
     return [
         medico for medico in medicos
-        if medico["id"] not in ids_medicos_ocupados
+        if medico.get("disponivel", True)
+        and medico["id"] not in ids_medicos_ocupados
     ]
 
 
@@ -134,6 +135,7 @@ def index():
         atendimentos_atuais=atendimentos_atuais,
         proximo_paciente=proximo_paciente,
         medicos_da_urgencia=medicos_da_urgencia,
+        medicos_livres=medicos_livres,
         medicos_disponiveis=medicos_disponiveis,
         medicos_cadastrados=bool(medicos),
         medico_selecionado=medico_selecionado,
@@ -188,6 +190,7 @@ def cadastro_medicos():
                 "id": proximo_id_medico,
                 "nome": nome,
                 "urgencia": urgencia,
+                "disponivel": True,
                 "ordem_cadastro": proximo_id_medico,
                 "atendimentos_concluidos": 0,
                 "atendimentos_por_dia": {},
@@ -195,12 +198,77 @@ def cadastro_medicos():
             proximo_id_medico += 1
         return redirect(url_for("cadastro_medicos"))
 
+    busca_medico = request.args.get("buscar_medico", "").strip()
+    if busca_medico:
+        try:
+            id_busca = int(busca_medico)
+        except ValueError:
+            termo_normalizado = busca_medico.casefold()
+            medicos_exibidos = [
+                medico for medico in medicos
+                if termo_normalizado in medico["nome"].casefold()
+            ]
+        else:
+            medicos_exibidos = [
+                medico for medico in medicos if medico["id"] == id_busca
+            ]
+    else:
+        medicos_exibidos = medicos
+
     return render_template(
         "medicos.html",
         medicos=medicos,
+        medicos_exibidos=medicos_exibidos,
+        busca_medico=busca_medico,
+        ids_medicos_em_atendimento={
+            atendimento["medico"]["id"] for atendimento in atendimentos_atuais
+        },
         data_hoje=date.today().isoformat(),
         nomes_urgencia=NOMES_URGENCIA,
     )
+
+
+@app.route("/medicos/<int:id_medico>/disponibilidade", methods=["POST"])
+def alterar_disponibilidade_medico(id_medico):
+    disponibilidade = request.form.get("disponivel", "")
+    if disponibilidade not in {"0", "1"}:
+        abort(400, description="Estado de disponibilidade inválido.")
+
+    with estado_lock:
+        medico = next((item for item in medicos if item["id"] == id_medico), None)
+        if medico is None:
+            abort(404, description="Médico não encontrado.")
+        medico["disponivel"] = disponibilidade == "1"
+
+    busca_medico = request.form.get("buscar_medico", "").strip()
+    destino = (
+        url_for("cadastro_medicos", buscar_medico=busca_medico)
+        if busca_medico
+        else url_for("cadastro_medicos")
+    )
+    return redirect(destino)
+
+
+@app.route("/medicos/<int:id_medico>/remover", methods=["POST"])
+def remover_medico(id_medico):
+    with estado_lock:
+        medico = next((item for item in medicos if item["id"] == id_medico), None)
+        if medico is None:
+            abort(404, description="Médico não encontrado.")
+        if any(
+            atendimento["medico"]["id"] == id_medico
+            for atendimento in atendimentos_atuais
+        ):
+            abort(409, description="Não é possível remover um médico em atendimento.")
+        medicos.remove(medico)
+
+    busca_medico = request.form.get("buscar_medico", "").strip()
+    destino = (
+        url_for("cadastro_medicos", buscar_medico=busca_medico)
+        if busca_medico
+        else url_for("cadastro_medicos")
+    )
+    return redirect(destino)
 
 
 @app.route("/atender", methods=["POST"])
@@ -222,10 +290,10 @@ def atender():
             if medicos_da_urgencia:
                 abort(
                     409,
-                    description="Todos os médicos desta urgência estão em atendimento.",
+                    description="Não há médico disponível para esta urgência.",
                 )
             if medicos:
-                abort(409, description="Todos os médicos estão em atendimento.")
+                abort(409, description="Não há médicos disponíveis para este paciente.")
             abort(409, description="Cadastre um médico para chamar pacientes.")
 
         if fila.remover(paciente.id) is None:
