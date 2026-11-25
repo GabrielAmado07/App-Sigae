@@ -22,14 +22,18 @@ class Paciente:
     def _normalizar_horario(horario):
         if isinstance(horario, datetime):
             return horario
-        if isinstance(horario, str):
-            texto = horario.strip()
-            if texto:
-                try:
-                    return datetime.fromisoformat(texto)
-                except ValueError:
-                    try:
-                        return datetime.combine(datetime.min.date(), time.fromisoformat(texto))
-                    except ValueError:
-                        return datetime.min
+        if not isinstance(horario, str):
+            return datetime.min
+
+        texto = horario.strip()
+        for parser in (datetime.fromisoformat, time.fromisoformat):
+            try:
+                valor = parser(texto)
+            except ValueError:
+                continue
+            return (
+                valor
+                if isinstance(valor, datetime)
+                else datetime.combine(datetime.min.date(), valor)
+            )
         return datetime.min

@@ -176,15 +176,14 @@ def finalizar_atendimento():
 
 @app.route("/reclassificar/<int:id_paciente>", methods=["POST"])
 def reclassificar(id_paciente):
-    paciente = fila.buscar(id_paciente)
-    if paciente is None:
+    if fila.buscar(id_paciente) is None:
         abort(404, description="Paciente não encontrado na fila.")
 
     classificacao = request.form.get("classificacao", "").strip().upper()
     if classificacao not in CLASSIFICACAO_RISCO:
         abort(400, description="Classificação de risco inválida.")
 
-    paciente.classificacao = classificacao
+    fila.reclassificar(id_paciente, classificacao)
     return redirect(url_for("index"))
 
 
